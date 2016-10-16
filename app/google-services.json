@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "277372206319",
+    "firebase_url": "https://imess-eaa69.firebaseio.com",
+    "project_id": "imess-eaa69",
+    "storage_bucket": "imess-eaa69.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277372206319:android:a7dda6361def498b",
+        "android_client_info": {
+          "package_name": "com.haloteam.imess"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "277372206319-a53nuakgfi1gkf24nph2lgtk8imhjjtf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.haloteam.imess",
+            "certificate_hash": "1B38A9A3F5729034231000223396A89676D18A56"
+          }
+        },
+        {
+          "client_id": "277372206319-eci6p7nt1a819kmdblua9vhghinsjv2p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDPqO5jTZgofct2Fyd0BObShKStkcWsP0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "277372206319-eci6p7nt1a819kmdblua9vhghinsjv2p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

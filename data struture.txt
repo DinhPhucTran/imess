@@ -1,0 +1,45 @@
+﻿users
+	_id{
+		name
+		email
+		onesignal_id
+		groups{
+			group_id
+		}
+		chats{
+			chat_id
+		}
+		friends{
+			friend_id
+		}
+	}
+
+groups
+	_id{
+		name
+		members{
+			id
+		}
+	}
+	
+messages
+	chat_id{
+		_id{
+			sender_id
+			message
+			timestamp
+		}
+	}
+	
+chats
+	_id{
+		name
+		members{
+			member_id
+		}
+	}
+	
+
+
+	
+	
