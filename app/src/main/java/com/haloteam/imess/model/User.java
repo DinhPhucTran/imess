@@ -24,6 +24,10 @@ public class User {
         this.friendIdList = friendIdList;
     }
 
+    public User(String name) {
+        this.name = name;
+    }
+
     public String getId() {
         return id;
     }

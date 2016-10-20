@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:id="@+id/layoutRightChat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textViewRightChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_weight="6"
+            android:background="@drawable/rounded_corner"
+            android:padding="6dp"
+            android:text="Android charting application xml ui design tutorial with example. Android charting application xml ui design tutorial with example. Android charting application xml ui design tutorial with example. Android charting application xml ui design tutorial with example."
+            android:textColor="#000" />
+
+        <ImageView
+            android:id="@+id/imageViewArrowRight"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="-15dp"
+            android:layout_marginTop="6.5dp"
+            android:layout_weight="1"
+            android:src="@drawable/arrow_bg1" />
+
+        <ImageView
+            android:id="@+id/imageViewUserRight"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="3"
+            android:src="@drawable/user_pacific" />
+    </LinearLayout>
+</LinearLayout>
