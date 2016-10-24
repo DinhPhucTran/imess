@@ -111,45 +111,49 @@ public class AddFriendActivity extends AppCompatActivity {
                 mDatabaseReference.child(USERS_CHILD).orderByChild(EMAIL_CHILD).startAt(email)) {
             @Override
             protected void populateViewHolder(UserViewHolder viewHolder, final User model, int position) {
-                viewHolder.name.setText(model.getName());
-                viewHolder.email.setText(model.getEmail());
-                if(model.getPhotoUrl() != null)
-                    Glide.with(AddFriendActivity.this).load(model.getPhotoUrl()).into(viewHolder.image);
-                else
-                    viewHolder.image.setImageDrawable(ContextCompat.getDrawable(
-                            AddFriendActivity.this,
-                            R.drawable.account_circle));
-                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        try {
-                            OneSignal.postNotification(new JSONObject("{" +
-                                    "'contents': {'en':' "+ model.getName() + " wants to be your friend.'}, " +
-                                    "'data': {'type': 'friend_request', " +
-                                            "'sender_id': '" + mUser.getUid() + "', " +
-                                            "'sender_email': '" + mUser.getEmail() + "', " +
-                                            "'sender_name': '" + mUser.getDisplayName() + "', " +
-                                            "'sender_oneSignalId': '" + mCurrentUserOneSignalId + "', " +
-                                            "'sender_photoUrl': '" + mUser.getPhotoUrl() + "'}, " +
-                                    "'include_player_ids': ['" + model.getOneSignalId() + "']}"),
-                                    new OneSignal.PostNotificationResponseHandler() {
-                                        @Override
-                                        public void onSuccess(JSONObject response) {
-                                            Log.i(TAG, "postNotification Success: " + response.toString());
-                                            Toast.makeText(AddFriendActivity.this, "Success", Toast.LENGTH_SHORT).show();
-                                        }
+                if(model.getEmail().equals(mUser.getEmail()))
+                    viewHolder.itemView.setVisibility(View.GONE);
+                else {
+                    viewHolder.name.setText(model.getName());
+                    viewHolder.email.setText(model.getEmail());
+                    if (model.getPhotoUrl() != null)
+                        Glide.with(AddFriendActivity.this).load(model.getPhotoUrl()).into(viewHolder.image);
+                    else
+                        viewHolder.image.setImageDrawable(ContextCompat.getDrawable(
+                                AddFriendActivity.this,
+                                R.drawable.account_circle));
+                    viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                OneSignal.postNotification(new JSONObject("{" +
+                                                "'contents': {'en':' " + model.getName() + " wants to be your friend.'}, " +
+                                                "'data': {'type': 'friend_request', " +
+                                                "'sender_id': '" + mUser.getUid() + "', " +
+                                                "'sender_email': '" + mUser.getEmail() + "', " +
+                                                "'sender_name': '" + mUser.getDisplayName() + "', " +
+                                                "'sender_oneSignalId': '" + mCurrentUserOneSignalId + "', " +
+                                                "'sender_photoUrl': '" + mUser.getPhotoUrl() + "'}, " +
+                                                "'include_player_ids': ['" + model.getOneSignalId() + "']}"),
+                                        new OneSignal.PostNotificationResponseHandler() {
+                                            @Override
+                                            public void onSuccess(JSONObject response) {
+                                                Log.i(TAG, "postNotification Success: " + response.toString());
+                                                Toast.makeText(AddFriendActivity.this, "Success", Toast.LENGTH_SHORT).show();
+                                            }
 
-                                        @Override
-                                        public void onFailure(JSONObject response) {
-                                            Log.e(TAG, "postNotification Failure: " + response.toString());
-                                        }
-                                    });
-                            Toast.makeText(AddFriendActivity.this, "Sending request to " + model.getOneSignalId(), Toast.LENGTH_SHORT).show();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                                            @Override
+                                            public void onFailure(JSONObject response) {
+                                                Log.e(TAG, "postNotification Failure: " + response.toString());
+                                            }
+                                        });
+                                Toast.makeText(AddFriendActivity.this, "Sending request to " + model.getOneSignalId(), Toast.LENGTH_SHORT).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         };
         mUserList.setAdapter(mFirebaseAdapter);

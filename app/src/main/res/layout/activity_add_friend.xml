@@ -40,7 +40,7 @@
                 android:id="@+id/btSearch"
                 android:src="@drawable/account_search"
                 android:layout_alignParentRight="true"
-                android:scaleType="fitCenter"
+                android:scaleType="fitXY"
                 android:background="?attr/selectableItemBackgroundBorderless"/>
 
         </RelativeLayout>
