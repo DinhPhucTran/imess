@@ -2,17 +2,18 @@ package com.haloteam.imess;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.appinvite.AppInvite;
@@ -23,9 +24,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.haloteam.imess.activity.AddFriendActivity;
 import com.haloteam.imess.activity.SignInActivity;
 import com.haloteam.imess.model.Chat;
+import com.haloteam.imess.model.User;
+import com.onesignal.OSNotification;
+import com.onesignal.OSNotificationAction;
+import com.onesignal.OSNotificationOpenResult;
 import com.onesignal.OneSignal;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -37,9 +46,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }
 
+    private static final String TAG = "mainactivity";
+
     public static final String ANONYMOUS = "anonymous";
     public static final String GROUP_CHILD = "groups";
     public static final String CHATS_CHILD = "chats";
+    public static final String FRIENDS_CHILD = "friends";
+    public static final String USERS_CHILD = "users";
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -66,18 +79,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                startActivity(new Intent(MainActivity.this, AddFriendActivity.class));
             }
         });
 
-        mChatRecyclerView = (RecyclerView) findViewById(R.id.chatList);
+//        mChatRecyclerView = (RecyclerView) findViewById(R.id.chatList);
         mLinearLayoutManager = new LinearLayoutManager(this);
 //        mLinearLayoutManager.setStackFromEnd(true);
-        mChatRecyclerView.setLayoutManager(mLinearLayoutManager);
+//        mChatRecyclerView.setLayoutManager(mLinearLayoutManager);
 
         // Set default username is anonymous.
         mUsername = ANONYMOUS;
+
+        //Initialize OneSignal
+        initOneSignal();
 
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -126,10 +141,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
             }
         });
-        mChatRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mChatRecyclerView.setAdapter(mFirebaseAdapter);
-
-        OneSignal.startInit(this).init();
+//        mChatRecyclerView.setLayoutManager(mLinearLayoutManager);
+//        mChatRecyclerView.setAdapter(mFirebaseAdapter);
     }
 
     @Override
@@ -163,7 +176,60 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    public void onConnectionFailed(ConnectionResult mConnectionResult) {
 
+    }
+
+    private void initOneSignal(){
+        OneSignal.startInit(this).setNotificationReceivedHandler(new OneSignal.NotificationReceivedHandler() {
+            @Override
+            public void notificationReceived(OSNotification notification) {
+//                JSONObject data = notification.payload.additionalData;
+//                if(data != null){
+//                    Toast.makeText(MainActivity.this, data.toString(), Toast.LENGTH_SHORT).show();
+//                }
+            }
+        }).setNotificationOpenedHandler(new OneSignal.NotificationOpenedHandler() {
+            @Override
+            public void notificationOpened(OSNotificationOpenResult result) {
+                OSNotificationAction.ActionType actionType = result.action.type;
+                JSONObject data = result.notification.payload.additionalData;
+                String customKey;
+
+                if (data != null) {
+//                    Toast.makeText(MainActivity.this, data.toString(), Toast.LENGTH_SHORT).show();
+                    String messageType = "";
+                    try {
+                        messageType = data.getString("type");
+                    } catch (JSONException mE) {
+                        mE.printStackTrace();
+                    }
+
+                    if(messageType.equals("friend_request")){
+                        addFriend(data);
+                    }
+                }
+
+                if (actionType == OSNotificationAction.ActionType.ActionTaken)
+                    Log.i("OneSignalExample", "Button pressed with id: " + result.action.actionID);
+            }
+        }).init();
+    }
+
+    private void addFriend(JSONObject object){
+        User user = new User();
+        try {
+            user.setName(object.getString("sender_name"));
+            user.setEmail(object.getString("sender_email"));
+            user.setOneSignalId(object.getString("sender_oneSignalId"));
+            user.setId(object.getString("sender_id"));
+            user.setPhotoUrl(object.getString("sender_photoUrl"));
+
+            mFirebaseDatabaseReference.child(USERS_CHILD).child(mFirebaseAuth.getCurrentUser().getUid()).child(FRIENDS_CHILD).child(user.getId()).setValue(user);
+            Toast.makeText(this, "Added " + user.getName() + " to your friend list", Toast.LENGTH_SHORT).show();
+        } catch (JSONException mE) {
+            mE.printStackTrace();
+            Toast.makeText(this, "Failed to add friend", Toast.LENGTH_SHORT).show();
+        }
     }
 }

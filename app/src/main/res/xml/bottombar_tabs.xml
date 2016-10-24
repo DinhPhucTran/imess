@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tabs>
+    <tab id="@+id/tab_recent"
+        icon="@drawable/ic_recent"
+        title="@string/recent"/>
+    <tab
+        id="@+id/tab_groups"
+        icon="@drawable/ic_groups"
+        title="@string/groups"/>
+    <tab
+        id="@+id/tab_friends"
+        icon="@drawable/ic_user"
+        title="@string/friends"/>
+</tabs>
