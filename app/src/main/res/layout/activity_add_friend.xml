@@ -32,7 +32,8 @@
                 android:layout_marginRight="10dp"
                 android:id="@+id/etSearch"
                 android:inputType="textEmailAddress"
-                android:imeOptions="actionDone"/>
+                android:imeOptions="actionDone"
+                android:background="@android:color/transparent"/>
 
             <ImageButton
                 android:layout_width="48dp"

@@ -24,6 +24,11 @@
         </activity>
         <activity android:name=".activity.ChatActivity">
         </activity>
+        <activity
+            android:name=".activity.CreatingGroupActivity"
+            android:label="@string/create_new_group"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.haloteam.imess.activity.AddFriendActivity;
+import com.haloteam.imess.activity.CreatingGroupActivity;
 import com.haloteam.imess.activity.SignInActivity;
 import com.haloteam.imess.fragment.FriendsFragment;
 import com.haloteam.imess.fragment.GroupsFragment;
@@ -85,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private FriendsFragment mFriendsFragment;
     private BottomBar mBottomBar;
     private FloatingActionButton mFab;
+
+    private int mSelectedTab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,7 +152,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, AddFriendActivity.class));
+                switch (mSelectedTab){
+                    case R.id.tab_groups:
+                        startActivity(new Intent(MainActivity.this, CreatingGroupActivity.class));
+                        break;
+                    case R.id.tab_friends:
+                        startActivity(new Intent(MainActivity.this, AddFriendActivity.class));
+                        break;
+                }
             }
         });
 
@@ -162,14 +172,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     case R.id.tab_recent:
                         replaceFragment(mRecentFragment);
                         mFab.hide();
+                        mSelectedTab = R.id.tab_recent;
                         break;
                     case R.id.tab_groups:
                         replaceFragment(mGroupsFragment);
-                        mFab.hide();
+                        mFab.show();
+                        mSelectedTab = R.id.tab_groups;
                         break;
                     case R.id.tab_friends:
                         replaceFragment(mFriendsFragment);
                         mFab.show();
+                        mSelectedTab = R.id.tab_friends;
                         break;
                 }
             }

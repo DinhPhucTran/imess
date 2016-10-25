@@ -88,6 +88,7 @@ public class FriendsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_friends, container, false);
         mRecylcerViewFriends = (RecyclerView) view.findViewById(R.id.recycler_friends);
+        mRecylcerViewFriends.setHasFixedSize(true);
         mRecylcerViewFriends.setLayoutManager(new LinearLayoutManager(getContext()));
         initFriendList();
         mRecylcerViewFriends.setAdapter(mFirebaseAdapter);
@@ -152,6 +153,8 @@ public class FriendsFragment extends Fragment {
     private void initFriendList(){
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         mFirebaseDbRef = FirebaseDatabase.getInstance().getReference();
+        if(mFirebaseAdapter != null)
+            mFirebaseAdapter.cleanup();
         mFirebaseAdapter = new FirebaseRecyclerAdapter<User, UserViewHolder>(User.class,
                 R.layout.user_item,
                 UserViewHolder.class,

@@ -19,8 +19,11 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.haloteam.imess.R;
 import com.haloteam.imess.model.User;
 import com.onesignal.OneSignal;
@@ -29,6 +32,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.haloteam.imess.MainActivity.FRIENDS_CHILD;
 
 public class AddFriendActivity extends AppCompatActivity {
 
@@ -69,7 +74,9 @@ public class AddFriendActivity extends AppCompatActivity {
         mSearchText = (EditText) findViewById(R.id.etSearch);
         mBtSearch = (ImageButton) findViewById(R.id.btSearch);
         mUserList = (RecyclerView) findViewById(R.id.userList);
-        mUserList.setLayoutManager(new LinearLayoutManager(this));
+        mLinearLayoutManager = new LinearLayoutManager(this);
+        mUserList.setLayoutManager(mLinearLayoutManager);
+        mUserList.setHasFixedSize(true);
 
         mUser = FirebaseAuth.getInstance().getCurrentUser();
         OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
@@ -84,7 +91,7 @@ public class AddFriendActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)){
-                    Toast.makeText(AddFriendActivity.this, "Finding...", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(AddFriendActivity.this, "Finding...", Toast.LENGTH_SHORT).show();
                     findFriend(mSearchText.getText().toString());
                 }
                 return true;
@@ -95,7 +102,7 @@ public class AddFriendActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(!mSearchText.getText().toString().isEmpty()){
-                    Toast.makeText(AddFriendActivity.this, "Finding...", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(AddFriendActivity.this, "Finding...", Toast.LENGTH_SHORT).show();
                     findFriend(mSearchText.getText().toString());
                 }
             }
@@ -105,15 +112,18 @@ public class AddFriendActivity extends AppCompatActivity {
 
     private void findFriend(String email){
         mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        if(mFirebaseAdapter != null)
+            mFirebaseAdapter.cleanup();
         mFirebaseAdapter = new FirebaseRecyclerAdapter<User, UserViewHolder>(User.class,
                 R.layout.user_item,
                 UserViewHolder.class,
                 mDatabaseReference.child(USERS_CHILD).orderByChild(EMAIL_CHILD).startAt(email)) {
             @Override
-            protected void populateViewHolder(UserViewHolder viewHolder, final User model, int position) {
-                if(model.getEmail().equals(mUser.getEmail()))
-                    viewHolder.itemView.setVisibility(View.GONE);
-                else {
+            protected void populateViewHolder(final UserViewHolder viewHolder, final User model, int position) {
+                if(model.getEmail().equals(mUser.getEmail())) {
+                    viewHolder.itemView.getLayoutParams().height = 0;
+                    viewHolder.itemView.requestLayout();
+                } else {
                     viewHolder.name.setText(model.getName());
                     viewHolder.email.setText(model.getEmail());
                     if (model.getPhotoUrl() != null)
@@ -122,40 +132,64 @@ public class AddFriendActivity extends AppCompatActivity {
                         viewHolder.image.setImageDrawable(ContextCompat.getDrawable(
                                 AddFriendActivity.this,
                                 R.drawable.account_circle));
-                    viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            try {
-                                OneSignal.postNotification(new JSONObject("{" +
-                                                "'contents': {'en':' " + model.getName() + " wants to be your friend.'}, " +
-                                                "'data': {'type': 'friend_request', " +
-                                                "'sender_id': '" + mUser.getUid() + "', " +
-                                                "'sender_email': '" + mUser.getEmail() + "', " +
-                                                "'sender_name': '" + mUser.getDisplayName() + "', " +
-                                                "'sender_oneSignalId': '" + mCurrentUserOneSignalId + "', " +
-                                                "'sender_photoUrl': '" + mUser.getPhotoUrl() + "'}, " +
-                                                "'include_player_ids': ['" + model.getOneSignalId() + "']}"),
-                                        new OneSignal.PostNotificationResponseHandler() {
-                                            @Override
-                                            public void onSuccess(JSONObject response) {
-                                                Log.i(TAG, "postNotification Success: " + response.toString());
-                                                Toast.makeText(AddFriendActivity.this, "Success", Toast.LENGTH_SHORT).show();
-                                            }
 
+                    //If this user existed in current user's friend list, exclude him/her
+                    mDatabaseReference.child(USERS_CHILD)
+                            .child(mUser.getUid())
+                            .child(FRIENDS_CHILD)
+                            .child(model.getId())
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot mDataSnapshot) {
+                                    if(mDataSnapshot.exists()){
+                                        viewHolder.itemView.getLayoutParams().height = 0;
+                                        viewHolder.itemView.requestLayout();
+                                    } else {
+                                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                                             @Override
-                                            public void onFailure(JSONObject response) {
-                                                Log.e(TAG, "postNotification Failure: " + response.toString());
+                                            public void onClick(View v) {
+                                                try {
+                                                    OneSignal.postNotification(new JSONObject("{" +
+                                                                    "'contents': {'en':' " + model.getName() + " wants to be your friend.'}, " +
+                                                                    "'data': {'type': 'friend_request', " +
+                                                                    "'sender_id': '" + mUser.getUid() + "', " +
+                                                                    "'sender_email': '" + mUser.getEmail() + "', " +
+                                                                    "'sender_name': '" + mUser.getDisplayName() + "', " +
+                                                                    "'sender_oneSignalId': '" + mCurrentUserOneSignalId + "', " +
+                                                                    "'sender_photoUrl': '" + mUser.getPhotoUrl() + "'}, " +
+                                                                    "'include_player_ids': ['" + model.getOneSignalId() + "']}"),
+                                                            new OneSignal.PostNotificationResponseHandler() {
+                                                                @Override
+                                                                public void onSuccess(JSONObject response) {
+                                                                    Log.i(TAG, "postNotification Success: " + response.toString());
+                                                                    Toast.makeText(AddFriendActivity.this, "Success", Toast.LENGTH_SHORT).show();
+                                                                }
+
+                                                                @Override
+                                                                public void onFailure(JSONObject response) {
+                                                                    Log.e(TAG, "postNotification Failure: " + response.toString());
+                                                                }
+                                                            });
+                                                    Toast.makeText(AddFriendActivity.this, "Sending request to " + model.getOneSignalId(), Toast.LENGTH_SHORT).show();
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
                                             }
                                         });
-                                Toast.makeText(AddFriendActivity.this, "Sending request to " + model.getOneSignalId(), Toast.LENGTH_SHORT).show();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError mDatabaseError) {
+
+                                }
+                            });
+
                 }
             }
         };
+        mUserList.getRecycledViewPool().clear();
+        mFirebaseAdapter.notifyDataSetChanged();
         mUserList.setAdapter(mFirebaseAdapter);
     }
 }
