@@ -3,5 +3,14 @@
     <string name="action_settings">Settings</string>
     <string name="sign_in">Sign in</string>
     <string name="sign_out">Sign out</string>
-    <string name="search_dots">Search...</string>
+    <string name="search_dots">Search&#8230;</string>
+    <string name="search_email_dots">Search email&#8230;</string>
+    <string name="recent">Recent</string>
+    <string name="groups">Groups</string>
+    <string name="friends">Friends</string>
+    <string name="group_name">Group name</string>
+    <string name="create_new_group">Create new group</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_creating_group">CreatingGroupActivity</string>
 </resources>

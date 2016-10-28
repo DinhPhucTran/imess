@@ -27,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.haloteam.imess.MainActivity;
 import com.haloteam.imess.R;
 import com.haloteam.imess.model.User;
+import com.onesignal.OneSignal;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener {
@@ -44,7 +45,8 @@ public class SignInActivity extends AppCompatActivity implements
     private FirebaseAuth.AuthStateListener mAuthListener;
     private DatabaseReference mFirebaseDatabaseReference;
 
-    private User mUser;
+    private static User mUser;
+    private String mOneSignalId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,14 @@ public class SignInActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 signIn();
+            }
+        });
+
+        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+            @Override
+            public void idsAvailable(String userId, String registrationId) {
+                if (registrationId != null)
+                    mOneSignalId = userId;
             }
         });
 
@@ -84,6 +94,8 @@ public class SignInActivity extends AppCompatActivity implements
                     mUser.setEmail(user.getEmail());
                     mUser.setName(user.getDisplayName());
                     mUser.setPhotoUrl(user.getPhotoUrl().toString());
+                    if(mOneSignalId != null)
+                        mUser.setOneSignalId(mOneSignalId);
 
                     //Save user info to (our) database
                     mFirebaseDatabaseReference.child(USERS_CHILD).child(user.getUid()).setValue(mUser);
@@ -162,5 +174,9 @@ public class SignInActivity extends AppCompatActivity implements
                         }
                     }
                 });
+    }
+
+    public static User getCurrentUser(){
+        return mUser;
     }
 }
