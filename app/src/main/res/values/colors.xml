@@ -10,4 +10,5 @@
     <color name="colorPrimaryTextWhite">#ffffffff</color>
     <color name="colorSecondaryTextWhite">#b3ffffff</color>
     <color name="colorDisabledTextWhite">#80ffffff</color>
+    <color name="colorLightBlue">#448aff</color>
 </resources>

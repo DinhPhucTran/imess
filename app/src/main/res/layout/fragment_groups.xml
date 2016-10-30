@@ -4,11 +4,12 @@
              android:layout_height="match_parent"
              tools:context="com.haloteam.imess.fragment.GroupsFragment">
 
-    <TextView
+    <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="GROUPS FRAGMENT"
-        android:textSize="50sp"
-        android:gravity="center"/>
+        android:id="@+id/recycler_groups"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"/>
 
 </FrameLayout>

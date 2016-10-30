@@ -44,7 +44,7 @@ public class FriendsFragment extends Fragment {
     private static final String ARG_FRIEND_LIST = "friendList";
 
     // TODO: Rename and change types of parameters
-    private RecyclerView mRecylcerViewFriends;
+    private RecyclerView mRecyclerViewFriends;
     private DatabaseReference mFirebaseDbRef;
     private FirebaseRecyclerAdapter mFirebaseAdapter;
 
@@ -87,12 +87,12 @@ public class FriendsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_friends, container, false);
-        mRecylcerViewFriends = (RecyclerView) view.findViewById(R.id.recycler_friends);
-        mRecylcerViewFriends.setHasFixedSize(true);
-        mRecylcerViewFriends.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecyclerViewFriends = (RecyclerView) view.findViewById(R.id.recycler_friends);
+        mRecyclerViewFriends.setHasFixedSize(true);
+        mRecyclerViewFriends.setLayoutManager(new LinearLayoutManager(getContext()));
         initFriendList();
-        mRecylcerViewFriends.setAdapter(mFirebaseAdapter);
-        mRecylcerViewFriends.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        mRecyclerViewFriends.setAdapter(mFirebaseAdapter);
+        mRecyclerViewFriends.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
 //                super.onScrolled(recyclerView, dx, dy);

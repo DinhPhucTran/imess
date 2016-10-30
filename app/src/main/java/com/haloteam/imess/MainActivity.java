@@ -50,7 +50,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
         FriendsFragment.OnRecyclerViewScrollListener,
         RecentFragment.OnFragmentInteractionListener,
-        GroupsFragment.OnFragmentInteractionListener{
+        GroupsFragment.OnRecyclerViewScrollListener{
 
     public static class ChatGroupViewHolder extends RecyclerView.ViewHolder{
         TextView chatName;
@@ -61,12 +61,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     private static final String TAG = "mainactivity";
+    private static int REQUEST_CODE_CREATE_GROUP = 1;
 
     public static final String ANONYMOUS = "anonymous";
-    public static final String GROUP_CHILD = "groups";
+    public static final String GROUPS_CHILD = "groups";
     public static final String CHATS_CHILD = "chats";
     public static final String FRIENDS_CHILD = "friends";
     public static final String USERS_CHILD = "users";
+    public static final String TITLE_CHILD = "title";
+    public static final String LAST_MESSAGE_CHILD = "lastMessage";
+    public static final String TIMESTAMP_CHILD = "timestamp";
+    public static final String MEMBERS_CHILD = "members";
+    public static final String MESSAGES_CHILD = "messages";
+    public static final String ID_CHILD = "id";
+    public static final String IMAGES_CHILD = "images";
+    public static final String PHOTO_URL_CHILD = "photoUrl";
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -78,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private String mUsername;
     private String mPhotoUrl;
-    private User mCurrentUser;
+    private static User mCurrentUser;
 
     private FrameLayout mFrameContainer;
     private RecentFragment mRecentFragment;
@@ -315,5 +324,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             mFab.hide();
         else if(dy < 0)
             mFab.show();
+    }
+
+    public static User getCurrentUser(){
+        return mCurrentUser;
     }
 }

@@ -8,16 +8,12 @@ import java.util.List;
 
 public class Chat {
     private String id;
-    private String name;
-    private List<String> memberIds;
+    private String title;
+    private String lastMessage;
+    private long timestamp;
+    private String photoUrl;
 
-    public Chat() {
-    }
-
-    public Chat(String name, List<String> memberIds) {
-        this.name = name;
-        this.memberIds = memberIds;
-    }
+    public Chat(){}
 
     public String getId() {
         return id;
@@ -27,19 +23,35 @@ public class Chat {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public List<String> getMemberIds() {
-        return memberIds;
+    public String getLastMessage() {
+        return lastMessage;
     }
 
-    public void setMemberIds(List<String> memberIds) {
-        this.memberIds = memberIds;
+    public void setLastMessage(String lastMessage) {
+        this.lastMessage = lastMessage;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 }

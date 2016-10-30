@@ -10,7 +10,11 @@
     <string name="friends">Friends</string>
     <string name="group_name">Group name</string>
     <string name="create_new_group">Create new group</string>
-
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_creating_group">CreatingGroupActivity</string>
+    <string name="storage_url">gs://imess-eaa69.appspot.com</string>
+    <string name="tap_to_select">Tap to select</string>
+    <string name="please_enter_group_name">Please enter group name</string>
+    <string name="created_group_successfully">Created group successfully</string>
+    <string name="creating_group">Creating group</string>
+    <string name="uploading_image">Uploading image</string>
+    <string name="created_group_successfully_but_failed_to_upload_image">Created group successfully but failed to upload group image. You can change group image later.</string>
 </resources>
