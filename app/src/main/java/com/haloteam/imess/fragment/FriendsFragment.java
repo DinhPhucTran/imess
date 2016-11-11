@@ -1,6 +1,7 @@
 package com.haloteam.imess.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -19,6 +20,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.haloteam.imess.R;
 import com.haloteam.imess.activity.AddFriendActivity;
+import com.haloteam.imess.activity.ChatActivity;
 import com.haloteam.imess.model.User;
 
 import java.util.List;
@@ -172,7 +174,9 @@ public class FriendsFragment extends Fragment {
                 viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        Intent intent = new Intent(getContext(), ChatActivity.class);
+                        intent.putExtra(ChatActivity.FRIEND_ID, model.getId());
+                        startActivity(intent);
                     }
                 });
             }
