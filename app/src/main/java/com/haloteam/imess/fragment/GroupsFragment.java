@@ -1,7 +1,7 @@
 package com.haloteam.imess.fragment;
 
 import android.content.Context;
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -18,14 +19,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.haloteam.imess.R;
+import com.haloteam.imess.activity.ChatActivity;
 import com.haloteam.imess.model.Chat;
-import com.haloteam.imess.model.User;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.haloteam.imess.MainActivity.CHATS_CHILD;
-import static com.haloteam.imess.MainActivity.FRIENDS_CHILD;
-import static com.haloteam.imess.MainActivity.MEMBERS_CHILD;
 import static com.haloteam.imess.MainActivity.USERS_CHILD;
 
 /**
@@ -75,8 +74,8 @@ public class GroupsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_friends, container, false);
-        mRecyclerViewGroups = (RecyclerView) view.findViewById(R.id.recycler_friends);
+        View view = inflater.inflate(R.layout.fragment_groups, container, false);
+        mRecyclerViewGroups = (RecyclerView) view.findViewById(R.id.recycler_groups);
         mRecyclerViewGroups.setHasFixedSize(true);
         mRecyclerViewGroups.setLayoutManager(new LinearLayoutManager(getContext()));
         initGroupList();
@@ -129,12 +128,13 @@ public class GroupsFragment extends Fragment {
         mFirebaseDbRef = FirebaseDatabase.getInstance().getReference();
         if(mFirebaseAdapter != null)
             mFirebaseAdapter.cleanup();
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<Chat, GroupViewHolder>(Chat.class,
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Chat, GroupViewHolder>(
+                Chat.class,
                 R.layout.group_item,
                 GroupViewHolder.class,
                 mFirebaseDbRef.child(USERS_CHILD).child(currentUserId).child(CHATS_CHILD)){
             @Override
-            protected void populateViewHolder(GroupViewHolder viewHolder, final Chat model, int position) {
+            protected void populateViewHolder(GroupViewHolder viewHolder, final Chat model, final int position) {
                 viewHolder.title.setText(model.getTitle());
                 viewHolder.lastMessage.setText(model.getLastMessage());
                 if(model.getPhotoUrl() != null)
@@ -146,7 +146,10 @@ public class GroupsFragment extends Fragment {
                     viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        Intent intent = new Intent(getActivity(), ChatActivity.class);
+                        startActivity(intent);
 
+                        Toast.makeText(getActivity(), "item " + position, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -165,4 +168,6 @@ public class GroupsFragment extends Fragment {
             image = (CircleImageView) itemView.findViewById(R.id.image);
         }
     }
+
+
 }

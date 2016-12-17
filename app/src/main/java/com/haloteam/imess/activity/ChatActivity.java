@@ -7,20 +7,13 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
-import com.haloteam.imess.Adapter.MessageAdapter;
 import com.haloteam.imess.R;
 import com.haloteam.imess.fragment.ChatFragment;
 import com.haloteam.imess.fragment.MapFragment;
-import com.haloteam.imess.model.Message;
-import com.haloteam.imess.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +27,8 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
     public static final String FRIEND_ID = "FriendID";
 //    static public User currentUser = new User("a", "abc@gmail.com", "abc", null);
 //    List<Message> messages;
-    private ChatFragment mChatFragment;
+    private ChatFragment mChatFragment = null;
+    private MapFragment mMapFragment = null;
     private Toolbar mToolbar;
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
@@ -51,6 +45,7 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         mChatFragment = new ChatFragment();
+        mMapFragment = new MapFragment();
         mViewPager = (ViewPager) findViewById(R.id.viewPager);
         setupViewPager(mViewPager);
         mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
