@@ -1,14 +1,27 @@
 package com.haloteam.imess.fragment;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.haloteam.imess.R;
+import com.haloteam.imess.ultil.GPSTracker;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,7 +35,8 @@ import com.haloteam.imess.R;
 /**
  * handle it 
  */
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements
+        OnMapReadyCallback {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -31,6 +45,11 @@ public class MapFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private GoogleMap mMap;
+    private GPSTracker mGPS;
+    private LatLng mCurrentLocation;  // compile google service for maps later
+    private Marker mCurrentMarker;
 
     private OnFragmentInteractionListener mListener;
 
@@ -63,13 +82,34 @@ public class MapFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false);
+        View view = inflater.inflate(R.layout.fragment_map, container, false);
+
+        try {
+            initMap();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return view;
+    }
+
+    private void initMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+        mGPS = new GPSTracker(getContext());
+        if (!mGPS.canGetLocation()) {
+            mGPS.showSettingsAlert();
+        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -94,6 +134,56 @@ public class MapFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        initMap();
+    }
+
+    /**
+     * This callback is triggered when the map is ready to be used.
+     * @param googleMap
+     */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+
+        mMap = googleMap;
+
+        if (mGPS.canGetLocation()) {
+            mCurrentLocation = new LatLng(mGPS.getLatitude(), mGPS.getLongitude());
+
+            MarkerOptions marker = new MarkerOptions();
+            marker.position(mCurrentLocation);
+            marker.title("You");
+            marker.icon(BitmapDescriptorFactory.defaultMarker());
+
+            mCurrentMarker = mMap.addMarker(marker);
+            mCurrentMarker.setTag(0);
+
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(mCurrentLocation).zoom(14).build();
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mMap.setMyLocationEnabled(true);
+            mMap.getUiSettings().setCompassEnabled(true);
+
+        } else {
+            mGPS.showSettingsAlert();
+        }
+
+
     }
 
     /**
