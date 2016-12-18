@@ -110,6 +110,7 @@ public class CreatingGroupActivity extends AppCompatActivity {
             @Override
             public void onRemoveLabel(View view, int position) {
                 mSelectedPos.remove(new Integer(position));
+                notifyAll();
             }
         });
 

@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffffff">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_weight="20"
-        android:layout_height="wrap_content">
-
+        android:layout_height="match_parent"
+        android:layout_above="@+id/editorPanel">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,9 +23,35 @@
 
         </RelativeLayout>
     </ScrollView>
-    <include
-        layout="@layout/message_area"
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="@drawable/shadow_up"
+        android:layout_above="@+id/editorPanel"/>
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="bottom" />
-</LinearLayout>
+        android:layout_alignParentBottom="true"
+        android:id="@+id/editorPanel">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/btSend"
+            android:layout_centerVertical="true"
+            android:hint="@string/write_a_message"
+            android:layout_marginLeft="10dp"/>
+
+        <ImageButton
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@drawable/ic_send"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:id="@+id/btSend"/>
+    </RelativeLayout>
+</RelativeLayout>

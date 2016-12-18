@@ -17,6 +17,7 @@
     <string name="creating_group">Creating group</string>
     <string name="uploading_image">Uploading image</string>
     <string name="created_group_successfully_but_failed_to_upload_image">Created group successfully but failed to upload group image. You can change group image later.</string>
+    <string name="write_a_message">Write a message&#8230;</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
