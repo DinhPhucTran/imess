@@ -8,10 +8,16 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -25,33 +31,28 @@ import com.haloteam.imess.activity.ChatActivity;
 import com.haloteam.imess.model.Message;
 import com.haloteam.imess.model.User;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.haloteam.imess.MainActivity.FRIENDS_CHILD;
-import static com.haloteam.imess.MainActivity.USERS_CHILD;
+import static android.view.Gravity.LEFT;
+import static android.view.Gravity.RIGHT;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ChatFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ChatFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ChatFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    public static final String TAG = "ChatFragment";
 
+    public static String MESSAGES_CHILD = "messages";
+    private String mGroupId;
     private DatabaseReference mFirebaseDbRef;
     private FirebaseRecyclerAdapter mFirebaseAdapter;
+    private LinearLayoutManager mLinearLayoutManager;
+
+    private RecyclerView mRvMessages;
+    private Button mBtSend;
+    private EditText mEtMessage;
 
     static public User currentUser = new User("a", "abc@gmail.com", "abc", null);
     List<Message> messages;
@@ -64,93 +65,24 @@ public class ChatFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ChatFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ChatFragment newInstance(String param1, String param2) {
-        ChatFragment fragment = new ChatFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+//    public static ChatFragment newInstance(String param1, String param2) {
+//        ChatFragment fragment = new ChatFragment();
+//        Bundle args = new Bundle();
+//        fragment.setArguments(args);
+//        return fragment;
+//    }
+
+    public void setGroupId(String id){
+        mGroupId = id;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
 
         mFriendId = ChatActivity.mFriendId;
         mCurrentUserId = MainActivity.getCurrentUser().getId();
 
-    }
-
-    public void initChat(){
-        mFirebaseDbRef = FirebaseDatabase.getInstance().getReference();
-        if(mFirebaseAdapter != null)
-            mFirebaseAdapter.cleanup();
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<User, FriendsFragment.UserViewHolder>(User.class,
-                R.layout.user_item,
-                FriendsFragment.UserViewHolder.class,
-                mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(FRIENDS_CHILD)) {
-            @Override
-            protected void populateViewHolder(FriendsFragment.UserViewHolder viewHolder, final User model, int position) {
-                viewHolder.name.setText(model.getName());
-                viewHolder.email.setText(model.getEmail());
-                if(model.getPhotoUrl() != null)
-                    Glide.with(getContext()).load(model.getPhotoUrl()).into(viewHolder.image);
-                else
-                    viewHolder.image.setImageDrawable(ContextCompat.getDrawable(
-                            getContext(),
-                            R.drawable.account_circle));
-                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(getContext(), ChatActivity.class);
-                        intent.putExtra(ChatActivity.FRIEND_ID, model.getId());
-                        startActivity(intent);
-                    }
-                });
-            }
-        };
-    }
-
-    public static abstract class ViewHolder extends RecyclerView.ViewHolder{
-
-        public TextView messageTextView;
-        public ImageView avatarImageView;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-        }
-    }
-
-    public static class ViewHolderLeft extends MessageAdapter.ViewHolder{
-
-        public ViewHolderLeft(View itemView) {
-            super(itemView);
-            messageTextView = (TextView) itemView.findViewById(R.id.textViewLeftChat);
-            avatarImageView = (ImageView) itemView.findViewById(R.id.imageViewUserLeft);
-        }
-    }
-
-    public static class ViewHolderRight extends MessageAdapter.ViewHolder{
-
-        public ViewHolderRight(View itemView) {
-            super(itemView);
-            messageTextView = (TextView) itemView.findViewById(R.id.textViewRightChat);
-            avatarImageView = (ImageView) itemView.findViewById(R.id.imageViewUserRight);
-        }
     }
 
     @Override
@@ -158,11 +90,50 @@ public class ChatFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
-        RecyclerView rvMessage = (RecyclerView) view.findViewById(R.id.rvChat);
-        messages = Message.createListMessage(30);
-        MessageAdapter adapter = new MessageAdapter(messages, getContext());
-        rvMessage.setAdapter(adapter);
-        rvMessage.setLayoutManager(new LinearLayoutManager(getContext()));
+        mLinearLayoutManager = new LinearLayoutManager(getContext());
+        mLinearLayoutManager.setStackFromEnd(true);
+        mRvMessages = (RecyclerView) view.findViewById(R.id.rvChat);
+        mRvMessages.setLayoutManager(mLinearLayoutManager);
+
+        mBtSend = (Button) view.findViewById(R.id.btSend);
+        mEtMessage = (EditText) view.findViewById(R.id.etMessage);
+
+        initChat();
+
+        mEtMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.toString().trim().length() > 0) {
+                    mBtSend.setEnabled(true);
+                } else {
+                    mBtSend.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+        mBtSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.setSenderName(MainActivity.getCurrentUser().getName());
+                message.setSenderPhotoUrl(MainActivity.getCurrentUser().getPhotoUrl());
+                message.setMessageContent(mEtMessage.getText().toString());
+                message.setTimeStamp(System.currentTimeMillis());
+                message.setSenderId(mCurrentUserId);
+
+                mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).push().setValue(message);
+                mEtMessage.setText("");
+            }
+        });
+
         return view;
     }
 
@@ -204,4 +175,122 @@ public class ChatFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+    public void initChat(){
+        mFirebaseDbRef = FirebaseDatabase.getInstance().getReference();
+        if(mFirebaseAdapter != null)
+            mFirebaseAdapter.cleanup();
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM HH:mm");
+
+        final LinearLayout.LayoutParams leftLayoutParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        leftLayoutParams.setMargins(5, 5, 5, 40);
+
+        final LinearLayout.LayoutParams rightLayoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        rightLayoutParams.setMargins(40, 5, 5, 5);
+
+
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Message, MessageViewHolder>(
+                Message.class,
+                R.layout.message_item,
+                MessageViewHolder.class,
+                mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId)) {
+
+            @Override
+            protected void populateViewHolder(final MessageViewHolder viewHolder, Message model, int position) {
+                viewHolder.senderName.setText(model.getSenderName());
+                viewHolder.message.setText(model.getMessageContent());
+                Date date = new Date(model.getTimeStamp());
+                viewHolder.timeStamp.setText(dateFormat.format(date));
+
+                if(model.getSenderPhotoUrl() != null)
+                    Glide.with(getContext()).load(model.getSenderPhotoUrl()).into(viewHolder.senderImage);
+                else
+                    viewHolder.senderImage.setImageDrawable(ContextCompat.getDrawable(
+                            getContext(),
+                            R.drawable.account_circle));
+
+                if(model.getSenderId() != null) {
+                    if (model.getSenderId().equals(mCurrentUserId)) {
+                        viewHolder.senderName.setVisibility(View.GONE);
+                        viewHolder.senderImage.setVisibility(View.GONE);
+                        viewHolder.message.setBackgroundResource(R.drawable.message_bg_1);
+                        viewHolder.message.setPadding(10, 10, 10, 10);
+                        viewHolder.layout.setGravity(RIGHT);
+
+                        ViewGroup.LayoutParams lp = ((ViewGroup) viewHolder.layout).getLayoutParams();
+                        if( lp instanceof ViewGroup.MarginLayoutParams)
+                        {
+                            ((ViewGroup.MarginLayoutParams) lp).leftMargin = 40;
+                        }
+
+                    } else {
+                        viewHolder.senderName.setVisibility(View.VISIBLE);
+                        viewHolder.senderImage.setVisibility(View.VISIBLE);
+                        viewHolder.message.setBackgroundResource(R.drawable.message_bg_2);
+                        viewHolder.message.setPadding(10, 10, 10, 10);
+                        viewHolder.layout.setGravity(LEFT);
+
+                        ViewGroup.LayoutParams lp = ((ViewGroup) viewHolder.layout).getLayoutParams();
+                        if( lp instanceof ViewGroup.MarginLayoutParams)
+                        {
+                            ((ViewGroup.MarginLayoutParams) lp).rightMargin = 40;
+                        }
+                    }
+                }
+
+                viewHolder.layout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(viewHolder.timeStamp.getVisibility() == View.GONE)
+                            viewHolder.timeStamp.setVisibility(View.VISIBLE);
+                        else
+                            viewHolder.timeStamp.setVisibility(View.GONE);
+                    }
+                });
+            }
+        };
+
+        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                int msgCount = mFirebaseAdapter.getItemCount();
+                int lastVisiblePosition =
+                        mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
+                // If the recycler view is initially being loaded or the
+                // user is at the bottom of the list, scroll to the bottom
+                // of the list to show the newly added message.
+                if (lastVisiblePosition == -1 ||
+                        (positionStart >= (msgCount - 1) &&
+                                lastVisiblePosition == (positionStart - 1))) {
+                    mRvMessages.scrollToPosition(positionStart);
+                }
+            }
+        });
+
+        mRvMessages.setLayoutManager(mLinearLayoutManager);
+        mRvMessages.setAdapter(mFirebaseAdapter);
+    }
+
+    public static class MessageViewHolder extends RecyclerView.ViewHolder {
+        public TextView message;
+        public TextView senderName;
+        public CircleImageView senderImage;
+        public TextView timeStamp;
+        public LinearLayout layout;
+
+        public MessageViewHolder(View v) {
+            super(v);
+            message = (TextView) v.findViewById(R.id.message);
+            senderImage = (CircleImageView) v.findViewById(R.id.senderImage);
+            senderName = (TextView) v.findViewById(R.id.senderName);
+            timeStamp = (TextView) v.findViewById(R.id.timeStamp);
+            layout = (LinearLayout) v.findViewById(R.id.messageLayout);
+        }
+    }
+
 }

@@ -9,44 +9,19 @@ import java.util.List;
 
 public class Message {
     private String id;
-    private User writer;
-    private List<User> reader;
+    private String senderName;
+    private String senderId;
+    private String senderPhotoUrl;
     private String messageContent;
+    private long timeStamp;
 
-    public Message(){
-    }
+    public Message(){}
 
-//    public Message(String id, User writer, List<User> reader) {
-//        this.id = id;
-//        this.writer = writer;
-//        this.reader = reader;
-//    }
-
-    public Message(String id, User writer, List<User> reader, String messageContent) {
-        this.id = id;
-        this.writer = writer;
-        this.reader = reader;
+    public Message(String senderName, String senderPhotoUrl, String messageContent, long timeStamp) {
+        this.senderName = senderName;
+        this.senderPhotoUrl = senderPhotoUrl;
         this.messageContent = messageContent;
-    }
-
-    public static List<Message> createListMessage(int numberMessage){
-        List<Message> mess = new ArrayList<>();
-        List<User> userInGroup = new ArrayList<User>();
-        for (int i = 0; i < 2; i++){
-            if (i % 2 == 0){
-                userInGroup.add(new User("a"));
-            } else {
-                userInGroup.add(new User("b"));
-            }
-        }
-        for (int i = 0; i < numberMessage; i++) {
-            if (i % 3 == 0) {
-                mess.add(new Message("Message " + i, new User("a"), userInGroup, "djfldjfklsjfklsdjfljsdfkjsdflkjfljslfkjsdifeijojfsdjfijflsjf"));
-            } else {
-                mess.add(new Message("Message " + i, new User("b"), userInGroup, "djfldjfklsjfklsdjfljsdfkjsdflkjfljslfkjsdifeijojfsdjfijflsjf"));
-            }
-        }
-        return mess;
+        this.timeStamp = timeStamp;
     }
 
     public String getId() {
@@ -57,20 +32,20 @@ public class Message {
         this.id = id;
     }
 
-    public User getWriter() {
-        return writer;
+    public String getSenderName() {
+        return senderName;
     }
 
-    public void setWriter(User writer) {
-        this.writer = writer;
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
-    public List<User> getReader() {
-        return reader;
+    public String getSenderPhotoUrl() {
+        return senderPhotoUrl;
     }
 
-    public void setReader(List<User> reader) {
-        this.reader = reader;
+    public void setSenderPhotoUrl(String senderPhotoUrl) {
+        this.senderPhotoUrl = senderPhotoUrl;
     }
 
     public String getMessageContent() {
@@ -79,5 +54,21 @@ public class Message {
 
     public void setMessageContent(String messageContent) {
         this.messageContent = messageContent;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public String getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
     }
 }

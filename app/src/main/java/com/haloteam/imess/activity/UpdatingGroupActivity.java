@@ -15,9 +15,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -26,8 +24,11 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -39,10 +40,6 @@ import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
 import com.nguyenhoanglam.imagepicker.model.Image;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,30 +47,13 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.haloteam.imess.MainActivity.CHATS_CHILD;
 import static com.haloteam.imess.MainActivity.FRIENDS_CHILD;
-import static com.haloteam.imess.MainActivity.ID_CHILD;
-import static com.haloteam.imess.MainActivity.IMAGES_CHILD;
 import static com.haloteam.imess.MainActivity.MEMBERS_CHILD;
-import static com.haloteam.imess.MainActivity.MESSAGES_CHILD;
 import static com.haloteam.imess.MainActivity.PHOTO_URL_CHILD;
 import static com.haloteam.imess.MainActivity.TITLE_CHILD;
 import static com.haloteam.imess.MainActivity.USERS_CHILD;
+import static com.haloteam.imess.fragment.GroupsFragment.GROUP_ID;
 
-public class CreatingGroupActivity extends AppCompatActivity {
-
-    public static class FriendViewHolder extends RecyclerView.ViewHolder{
-        TextView name;
-        TextView email;
-        CircleImageView image;
-        CheckBox checkBox;
-
-        public FriendViewHolder(View itemView) {
-            super(itemView);
-            name = (TextView) itemView.findViewById(R.id.friend_name);
-            email = (TextView) itemView.findViewById(R.id.email);
-            image = (CircleImageView) itemView.findViewById(R.id.image);
-            checkBox = (CheckBox) itemView.findViewById(R.id.checkbox);
-        }
-    }
+public class UpdatingGroupActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE_IMAGE_PICKER = 1;
 
@@ -89,13 +69,16 @@ public class CreatingGroupActivity extends AppCompatActivity {
     private String mCurrentUserId;
     private StorageReference mStorageRef;
     private String mGroupImagePath;
+    private String mGroupId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_creating_group);
+        setContentView(R.layout.activity_updating_group);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mGroupId = getIntent().getStringExtra(GROUP_ID);
 
         mSelectedPos = new ArrayList<>();
         mSelectedFriends = new ArrayList<>();
@@ -112,10 +95,9 @@ public class CreatingGroupActivity extends AppCompatActivity {
             @Override
             public void onRemoveLabel(View view, int position) {
                 mSelectedPos.remove(Integer.valueOf(position));
-                mFirebaseAdapter.notifyDataSetChanged();
+                notifyAll();
             }
         });
-
     }
 
     private void initViews(){
@@ -136,24 +118,39 @@ public class CreatingGroupActivity extends AppCompatActivity {
         mLabelUI = (AutoLabelUI) findViewById(R.id.tag_view);
         mGroupImage = (CircleImageView) findViewById(R.id.group_image);
         mGroupName = (EditText) findViewById(R.id.et_group_name);
+
+        mDbRef.child(CHATS_CHILD).child(mGroupId).child(MEMBERS_CHILD).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data: dataSnapshot.getChildren()){
+                    User friend = data.getValue(User.class);
+                    mSelectedFriends.add(friend);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(UpdatingGroupActivity.this, getResources().getString(R.string.failed_to_get_members), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void getFriends(){
         if(mFirebaseAdapter != null)
             mFirebaseAdapter.cleanup();
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<User, FriendViewHolder>(User.class,
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<User, CreatingGroupActivity.FriendViewHolder>(User.class,
                 R.layout.friend_item_with_check,
-                FriendViewHolder.class,
+                CreatingGroupActivity.FriendViewHolder.class,
                 mDbRef.child(USERS_CHILD).child(mCurrentUserId).child(FRIENDS_CHILD)) {
             @Override
-            protected void populateViewHolder(final FriendViewHolder viewHolder, final User model, final int position) {
+            protected void populateViewHolder(final CreatingGroupActivity.FriendViewHolder viewHolder, final User model, final int position) {
                 viewHolder.name.setText(model.getName());
                 viewHolder.email.setText(model.getEmail());
                 if(model.getPhotoUrl() != null)
-                    Glide.with(CreatingGroupActivity.this).load(model.getPhotoUrl()).into(viewHolder.image);
+                    Glide.with(UpdatingGroupActivity.this).load(model.getPhotoUrl()).into(viewHolder.image);
                 else
                     viewHolder.image.setImageDrawable(ContextCompat.getDrawable(
-                            CreatingGroupActivity.this,
+                            UpdatingGroupActivity.this,
                             R.drawable.account_circle));
                 if(mSelectedPos.contains(position)) {
                     viewHolder.checkBox.setChecked(true);
@@ -213,7 +210,6 @@ public class CreatingGroupActivity extends AppCompatActivity {
         } else {
             final String groupId = mDbRef.child(CHATS_CHILD).push().getKey();
             mDbRef.child(CHATS_CHILD).child(groupId).child(TITLE_CHILD).setValue(mGroupName.getText().toString());
-            mDbRef.child(CHATS_CHILD).child(groupId).child(ID_CHILD).setValue(groupId);
 
             //Add current user to group
             mDbRef.child(CHATS_CHILD)
@@ -238,28 +234,6 @@ public class CreatingGroupActivity extends AppCompatActivity {
                     .child(groupId)
                     .child(TITLE_CHILD)
                     .setValue(mGroupName.getText().toString());
-            mDbRef.child(USERS_CHILD)
-                    .child(mCurrentUserId)
-                    .child(CHATS_CHILD)
-                    .child(groupId)
-                    .child(ID_CHILD)
-                    .setValue(groupId);
-
-            //Save group to friends' group list
-            for(User friend : mSelectedFriends){
-                mDbRef.child(USERS_CHILD)
-                        .child(friend.getId())
-                        .child(CHATS_CHILD)
-                        .child(groupId)
-                        .child(TITLE_CHILD)
-                        .setValue(mGroupName.getText().toString());
-                mDbRef.child(USERS_CHILD)
-                        .child(friend.getId())
-                        .child(CHATS_CHILD)
-                        .child(groupId)
-                        .child(ID_CHILD)
-                        .setValue(groupId);
-            }
 
             StorageReference imageRef = mStorageRef.child("groupimage" + groupId + ".jpg");
 
@@ -280,7 +254,7 @@ public class CreatingGroupActivity extends AppCompatActivity {
                     // Handle unsuccessful uploads
                     exception.printStackTrace();
                     progressDialog.dismiss();
-                    Toast.makeText(CreatingGroupActivity.this, getString(R.string.created_group_successfully_but_failed_to_upload_image), Toast.LENGTH_LONG).show();
+                    Toast.makeText(UpdatingGroupActivity.this, getString(R.string.created_group_successfully_but_failed_to_upload_image), Toast.LENGTH_LONG).show();
                     finish();
                 }
             }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -300,17 +274,7 @@ public class CreatingGroupActivity extends AppCompatActivity {
                             .child(PHOTO_URL_CHILD)
                             .setValue(downloadUrl.toString());
 
-                    //Save photo URL to friends' group list
-                    for (User friend : mSelectedFriends){
-                        mDbRef.child(USERS_CHILD)
-                                .child(friend.getId())
-                                .child(CHATS_CHILD)
-                                .child(groupId)
-                                .child(PHOTO_URL_CHILD)
-                                .setValue(downloadUrl.toString());
-                    }
-
-                    Toast.makeText(CreatingGroupActivity.this, getString(R.string.created_group_successfully), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UpdatingGroupActivity.this, getString(R.string.created_group_successfully), Toast.LENGTH_SHORT).show();
                     progressDialog.dismiss();
                     finish();
                 }

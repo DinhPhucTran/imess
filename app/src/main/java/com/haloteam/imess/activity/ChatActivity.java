@@ -10,6 +10,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.haloteam.imess.R;
 import com.haloteam.imess.fragment.ChatFragment;
@@ -17,6 +19,8 @@ import com.haloteam.imess.fragment.MapFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.haloteam.imess.fragment.GroupsFragment.GROUP_ID;
 
 /**
  * Created by nhonnguyen on 10/20/16.
@@ -33,6 +37,7 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
     public static String mFriendId;
+    private String mGroupId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,7 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
 
         Intent intent = getIntent();
         mFriendId = intent.getStringExtra(FRIEND_ID);
+        mGroupId = intent.getStringExtra(GROUP_ID);
 
         setContentView(R.layout.activity_chat);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -63,7 +69,9 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new ChatFragment(), "CHAT");
+        ChatFragment chatFragment = new ChatFragment();
+        chatFragment.setGroupId(mGroupId);
+        adapter.addFragment(chatFragment, "CHAT");
         adapter.addFragment(new MapFragment(), "MAP");
         viewPager.setAdapter(adapter);
     }
@@ -71,6 +79,27 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id){
+            case R.id.action_update_group:
+                Intent intent = new Intent(this, UpdatingGroupActivity.class);
+                intent.putExtra(GROUP_ID, mGroupId);
+                startActivity(intent);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

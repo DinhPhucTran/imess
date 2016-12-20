@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="5dp"
+    android:orientation="vertical"
+    android:id="@+id/messageLayout"
+    android:gravity="right">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/senderImage"
+                android:src="@drawable/ic_user"
+                android:layout_marginTop="25dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tom"
+                android:layout_toRightOf="@id/senderImage"
+                android:id="@+id/senderName"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="a"
+                android:layout_toRightOf="@id/senderImage"
+                android:layout_below="@id/senderName"
+                android:id="@+id/message"
+                android:textSize="15sp"
+                android:textColor="@color/colorPrimaryTextDark"
+                android:background="@drawable/message_bg_1"
+                android:padding="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/message"
+                android:layout_marginRight="10dp"
+                android:text="20:15"
+                android:id="@+id/timeStamp"
+                android:layout_toRightOf="@id/senderImage"
+                android:visibility="gone"/>
+        </RelativeLayout>
+
+
+</LinearLayout>

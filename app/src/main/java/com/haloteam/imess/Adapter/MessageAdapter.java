@@ -64,7 +64,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public int getItemViewType(int position) {
-        if (messageList.get(position).getWriter().getName() == "a"){
+        if (messageList.get(position).getSenderName() == "a"){
             isMainUser = 1;
         } else {
             isMainUser = 0;

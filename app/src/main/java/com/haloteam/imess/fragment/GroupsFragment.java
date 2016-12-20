@@ -37,7 +37,8 @@ import static com.haloteam.imess.MainActivity.USERS_CHILD;
  */
 public class GroupsFragment extends Fragment {
 
-//    private OnFragmentInteractionListener mListener;
+    public static final String GROUP_ID = "groupID";
+
     private OnRecyclerViewScrollListener mListener;
 
     private RecyclerView mRecyclerViewGroups;
@@ -147,9 +148,10 @@ public class GroupsFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(getActivity(), ChatActivity.class);
+                        intent.putExtra(GROUP_ID, model.getId());
                         startActivity(intent);
 
-                        Toast.makeText(getActivity(), "item " + position, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getActivity(), "item " + position, Toast.LENGTH_SHORT).show();
                     }
                 });
             }

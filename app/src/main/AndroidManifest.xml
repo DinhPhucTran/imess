@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.haloteam.imess">
+          package="com.haloteam.imess">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -22,25 +22,31 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".activity.SignInActivity"></activity>
-        <activity android:name=".activity.AddFriendActivity"></activity>
-        <activity android:name=".activity.ChatActivity"
+        <activity android:name=".activity.SignInActivity"/>
+        <activity android:name=".activity.AddFriendActivity"/>
+        <activity
+            android:name=".activity.ChatActivity"
             android:label="@string/title_activity_chat"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.haloteam.imess.MainActivity" />
+                android:value="com.haloteam.imess.MainActivity"/>
         </activity>
         <activity
             android:name=".activity.CreatingGroupActivity"
             android:label="@string/create_new_group"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activity.UpdatingGroupActivity"
+            android:label="@string/title_activity_updating_group"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
