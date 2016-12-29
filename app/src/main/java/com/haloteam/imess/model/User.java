@@ -15,6 +15,9 @@ public class User {
     private String photoUrl;
     private List<String> friendIdList;
 
+    private double latitude;
+    private double longitude;
+
     public User(){}
 
     public User(String name, String email, String oneSignalId, List<String> friendIdList) {
@@ -78,5 +81,21 @@ public class User {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 }

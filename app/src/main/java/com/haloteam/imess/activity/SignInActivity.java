@@ -26,18 +26,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.haloteam.imess.MainActivity;
 import com.haloteam.imess.R;
+import com.haloteam.imess.common.Constant;
 import com.haloteam.imess.model.User;
 import com.onesignal.OneSignal;
+
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener {
 
-    public static final String USERS_CHILD = "users";
-    public static final String EMAIL_CHILD = "email";
-    public static final String ID_CHILD = "id";
-    public static final String NAME_CHILD = "name";
-    public static final String ONESIGNAL_CHILD = "oneSignalId";
-    public static final String PHOTOURL_CHILD = "photoUrl";
+
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 1;
 
@@ -99,16 +96,19 @@ public class SignInActivity extends AppCompatActivity implements
                     mUser.setEmail(user.getEmail());
                     mUser.setName(user.getDisplayName());
                     mUser.setPhotoUrl(user.getPhotoUrl().toString());
+
                     if(mOneSignalId != null)
                         mUser.setOneSignalId(mOneSignalId);
 
                     //Save user info to (our) database
                     //Set individual value to avoid losing friend list
-                    mFirebaseDatabaseReference.child(USERS_CHILD).child(user.getUid()).child(EMAIL_CHILD).setValue(mUser.getEmail());
-                    mFirebaseDatabaseReference.child(USERS_CHILD).child(user.getUid()).child(ID_CHILD).setValue(mUser.getId());
-                    mFirebaseDatabaseReference.child(USERS_CHILD).child(user.getUid()).child(NAME_CHILD).setValue(mUser.getName());
-                    mFirebaseDatabaseReference.child(USERS_CHILD).child(user.getUid()).child(ONESIGNAL_CHILD).setValue(mUser.getOneSignalId());
-                    mFirebaseDatabaseReference.child(USERS_CHILD).child(user.getUid()).child(PHOTOURL_CHILD).setValue(mUser.getPhotoUrl());
+                    mFirebaseDatabaseReference.child(Constant.USERS_CHILD).child(user.getUid()).child(Constant.EMAIL_CHILD).setValue(mUser.getEmail());
+                    mFirebaseDatabaseReference.child(Constant.USERS_CHILD).child(user.getUid()).child(Constant.ID_CHILD).setValue(mUser.getId());
+                    mFirebaseDatabaseReference.child(Constant.USERS_CHILD).child(user.getUid()).child(Constant.NAME_CHILD).setValue(mUser.getName());
+                    mFirebaseDatabaseReference.child(Constant.USERS_CHILD).child(user.getUid()).child(Constant.ONESIGNAL_CHILD).setValue(mUser.getOneSignalId());
+                    mFirebaseDatabaseReference.child(Constant.USERS_CHILD).child(user.getUid()).child(Constant.PHOTOURL_CHILD).setValue(mUser.getPhotoUrl());
+                    mFirebaseDatabaseReference.child(Constant.USERS_CHILD).child(user.getUid()).child(Constant.LATITUDE_CHILD).setValue(mUser.getLatitude());
+                    mFirebaseDatabaseReference.child(Constant.USERS_CHILD).child(user.getUid()).child(Constant.LONGITUDE_CHILD).setValue(mUser.getLongitude());
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");

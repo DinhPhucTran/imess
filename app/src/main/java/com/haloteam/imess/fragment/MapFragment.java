@@ -48,7 +48,7 @@ public class MapFragment extends Fragment implements
 
     private GoogleMap mMap;
     private GPSTracker mGPS;
-    private LatLng mCurrentLocation;  // compile google service for maps later
+    private LatLng mCurrentLocation;
     private Marker mCurrentMarker;
 
     private OnFragmentInteractionListener mListener;
@@ -107,9 +107,6 @@ public class MapFragment extends Fragment implements
         mapFragment.getMapAsync(this);
 
         mGPS = new GPSTracker(getContext());
-        if (!mGPS.canGetLocation()) {
-            mGPS.showSettingsAlert();
-        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -140,6 +137,10 @@ public class MapFragment extends Fragment implements
     public void onResume() {
         super.onResume();
 
+        /**
+         * init the map and GPSTracker's instance again
+         */
+
         initMap();
     }
 
@@ -152,7 +153,16 @@ public class MapFragment extends Fragment implements
 
         mMap = googleMap;
 
-        if (mGPS.canGetLocation()) {
+        if(!mGPS.canGetLocation()){
+            mGPS.showSettingsAlert();
+        }
+        else{
+
+            /**
+             * + when the map is opened, then user's location is updated.
+             *
+             * + mGPS instance of GPSTracker class will get Latlng continously
+             */
             mCurrentLocation = new LatLng(mGPS.getLatitude(), mGPS.getLongitude());
 
             MarkerOptions marker = new MarkerOptions();
@@ -179,11 +189,7 @@ public class MapFragment extends Fragment implements
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setCompassEnabled(true);
 
-        } else {
-            mGPS.showSettingsAlert();
         }
-
-
     }
 
     /**
