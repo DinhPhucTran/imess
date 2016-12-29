@@ -14,7 +14,6 @@ public class User {
     private String oneSignalId;
     private String photoUrl;
     private List<String> friendIdList;
-
     private double latitude;
     private double longitude;
 
@@ -97,5 +96,19 @@ public class User {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        boolean isEqual= false;
+        String otherId = ((User) object).id;
+
+        if (object != null && object instanceof User)
+        {
+            isEqual = (this.id.equals(otherId));
+        }
+
+        return isEqual;
     }
 }

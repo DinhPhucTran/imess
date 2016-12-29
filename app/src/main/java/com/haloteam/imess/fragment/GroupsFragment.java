@@ -26,6 +26,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.haloteam.imess.MainActivity.CHATS_CHILD;
 import static com.haloteam.imess.MainActivity.USERS_CHILD;
+import static com.haloteam.imess.activity.ChatActivity.GROUP_NAME;
+import static com.haloteam.imess.activity.ChatActivity.PHOTO_URL;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -49,13 +51,6 @@ public class GroupsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment GroupsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static GroupsFragment newInstance() {
         GroupsFragment fragment = new GroupsFragment();
 //        Bundle args = new Bundle();
@@ -149,6 +144,8 @@ public class GroupsFragment extends Fragment {
                     public void onClick(View v) {
                         Intent intent = new Intent(getActivity(), ChatActivity.class);
                         intent.putExtra(GROUP_ID, model.getId());
+                        intent.putExtra(GROUP_NAME, model.getTitle());
+                        intent.putExtra(PHOTO_URL, model.getPhotoUrl());
                         startActivity(intent);
 
 //                        Toast.makeText(getActivity(), "item " + position, Toast.LENGTH_SHORT).show();

@@ -22,15 +22,12 @@ import java.util.List;
 
 import static com.haloteam.imess.fragment.GroupsFragment.GROUP_ID;
 
-/**
- * Created by nhonnguyen on 10/20/16.
- */
-
 public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFragmentInteractionListener, MapFragment.OnFragmentInteractionListener {
 
     public static final String FRIEND_ID = "FriendID";
-//    static public User currentUser = new User("a", "abc@gmail.com", "abc", null);
-//    List<Message> messages;
+    public static final String GROUP_NAME = "GroupName";
+    public static final String PHOTO_URL = "photoURL";
+
     private ChatFragment mChatFragment = null;
     private MapFragment mMapFragment = null;
     private Toolbar mToolbar;
@@ -38,6 +35,8 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
     private ViewPager mViewPager;
     public static String mFriendId;
     private String mGroupId;
+    private String mGroupName;
+    private String mPhotoUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +45,8 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
         Intent intent = getIntent();
         mFriendId = intent.getStringExtra(FRIEND_ID);
         mGroupId = intent.getStringExtra(GROUP_ID);
+        mGroupName = intent.getStringExtra(GROUP_NAME);
+        mPhotoUrl = intent.getStringExtra(PHOTO_URL);
 
         setContentView(R.layout.activity_chat);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -60,17 +61,14 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
         //FragmentTransaction transaction = getFragmentManager().beginTransaction();
         //transaction.replace()
 
-//        RecyclerView rvMessage = (RecyclerView) findViewById(R.id.rvChat);
-//        messages = Message.createListMessage(30);
-//        MessageAdapter adapter = new MessageAdapter(messages, this);
-//        rvMessage.setAdapter(adapter);
-//        rvMessage.setLayoutManager(new LinearLayoutManager(this));
     }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         ChatFragment chatFragment = new ChatFragment();
         chatFragment.setGroupId(mGroupId);
+        chatFragment.setGroupName(mGroupName);
+        chatFragment.setPhotoUrl(mPhotoUrl);
         adapter.addFragment(chatFragment, "CHAT");
         adapter.addFragment(new MapFragment(), "MAP");
         viewPager.setAdapter(adapter);
@@ -84,7 +82,7 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
         return true;
     }
 
@@ -96,6 +94,8 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
             case R.id.action_update_group:
                 Intent intent = new Intent(this, UpdatingGroupActivity.class);
                 intent.putExtra(GROUP_ID, mGroupId);
+                intent.putExtra(GROUP_NAME, mGroupName);
+                intent.putExtra(PHOTO_URL, mPhotoUrl);
                 startActivity(intent);
         }
 

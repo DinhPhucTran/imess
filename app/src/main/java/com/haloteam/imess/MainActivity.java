@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.haloteam.imess.activity.AddFriendActivity;
+import com.haloteam.imess.activity.ChatActivity;
 import com.haloteam.imess.activity.CreatingGroupActivity;
 import com.haloteam.imess.activity.SignInActivity;
 import com.haloteam.imess.fragment.FriendsFragment;
@@ -45,39 +46,44 @@ import com.roughike.bottombar.OnTabSelectListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.haloteam.imess.activity.AddFriendActivity.NOTI_ACCEPT;
+import static com.haloteam.imess.activity.ChatActivity.GROUP_NAME;
+import static com.haloteam.imess.activity.ChatActivity.PHOTO_URL;
+import static com.haloteam.imess.fragment.GroupsFragment.GROUP_ID;
+
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         FriendsFragment.OnRecyclerViewScrollListener,
-        RecentFragment.OnFragmentInteractionListener,
         GroupsFragment.OnRecyclerViewScrollListener{
 
-    public static class ChatGroupViewHolder extends RecyclerView.ViewHolder{
-
-        TextView chatName;
-
-
-        public ChatGroupViewHolder(View itemView) {
-            super(itemView);
-            chatName = (TextView) itemView.findViewById(R.id.name);
-        }
-    }
+//    public static class ChatGroupViewHolder extends RecyclerView.ViewHolder{
+//
+//        TextView chatName;
+//
+//
+//        public ChatGroupViewHolder(View itemView) {
+//            super(itemView);
+//            chatName = (TextView) itemView.findViewById(R.id.name);
+//        }
+//    }
 
     private static final String TAG = "mainactivity";
-    private static int REQUEST_CODE_CREATE_GROUP = 1;
+//    private static int REQUEST_CODE_CREATE_GROUP = 1;
 
-    public static final String ANONYMOUS = "anonymous";
+//    public static final String ANONYMOUS = "anonymous";
     public static final String GROUPS_CHILD = "groups";
     public static final String CHATS_CHILD = "chats";
     public static final String FRIENDS_CHILD = "friends";
     public static final String USERS_CHILD = "users";
     public static final String TITLE_CHILD = "title";
     public static final String LAST_MESSAGE_CHILD = "lastMessage";
-    public static final String TIMESTAMP_CHILD = "timestamp";
+//    public static final String TIMESTAMP_CHILD = "timestamp";
     public static final String MEMBERS_CHILD = "members";
     public static final String MESSAGES_CHILD = "messages";
     public static final String ID_CHILD = "id";
     public static final String IMAGES_CHILD = "images";
     public static final String PHOTO_URL_CHILD = "photoUrl";
+    public static final String PRIVATE_CHAT_CHILD = "privateChatID";
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -85,13 +91,13 @@ public class MainActivity extends AppCompatActivity implements
     private DatabaseReference mFirebaseDatabaseReference;
     private GoogleApiClient mGoogleApiClient;
 
-    private FirebaseRecyclerAdapter<Chat, ChatGroupViewHolder> mFirebaseAdapter;
+//    private FirebaseRecyclerAdapter<Chat, ChatGroupViewHolder> mFirebaseAdapter;
 
-    private String mUsername;
-    private String mPhotoUrl;
+//    private String mUsername;
+//    private String mPhotoUrl;
     private static User mCurrentUser;
 
-    private FrameLayout mFrameContainer;
+//    private FrameLayout mFrameContainer;
     private RecentFragment mRecentFragment;
     private GroupsFragment mGroupsFragment;
     private FriendsFragment mFriendsFragment;
@@ -110,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements
         initViews();
 
         // Set default username is anonymous.
-        mUsername = ANONYMOUS;
+//        mUsername = ANONYMOUS;
         mCurrentUser = new User();
 
         //Initialize OneSignal
@@ -125,12 +131,15 @@ public class MainActivity extends AppCompatActivity implements
             finish();
             return;
         } else {
-            mUsername = mFirebaseUser.getDisplayName();
+//            mUsername = mFirebaseUser.getDisplayName();
 
             mCurrentUser.setName(mFirebaseUser.getDisplayName());
             mCurrentUser.setEmail(mFirebaseUser.getEmail());
             mCurrentUser.setId(mFirebaseUser.getUid());
-            mCurrentUser.setPhotoUrl(mFirebaseUser.getPhotoUrl().toString());
+            if(mFirebaseUser.getPhotoUrl() != null)
+                mCurrentUser.setPhotoUrl(mFirebaseUser.getPhotoUrl().toString());
+            else
+                mCurrentUser.setPhotoUrl("");
         }
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -174,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        mFrameContainer = (FrameLayout) findViewById(R.id.container);
+//        mFrameContainer = (FrameLayout) findViewById(R.id.container);
         mBottomBar = (BottomBar) findViewById(R.id.bottom_bar);
         mBottomBar.setOnTabSelectListener(new OnTabSelectListener() {
             @Override
@@ -232,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements
     private void signOut(){
         mFirebaseAuth.signOut();
         Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-        mUsername = ANONYMOUS;
+//        mUsername = ANONYMOUS;
         startActivity(new Intent(this, SignInActivity.class));
     }
 
@@ -242,7 +251,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void initOneSignal(){
-        OneSignal.startInit(this).setNotificationReceivedHandler(new OneSignal.NotificationReceivedHandler() {
+        OneSignal.startInit(this)
+                .inFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification)
+                .setNotificationReceivedHandler(new OneSignal.NotificationReceivedHandler() {
             @Override
             public void notificationReceived(OSNotification notification) {
 //                JSONObject data = notification.payload.additionalData;
@@ -260,19 +271,41 @@ public class MainActivity extends AppCompatActivity implements
                 if (data != null) {
 //                    Toast.makeText(MainActivity.this, data.toString(), Toast.LENGTH_SHORT).show();
                     String messageType = "";
+                    String groupId = "";
+                    String photoUrl = "";
+                    String groupName = "";
+                    String senderName = "";
                     try {
                         messageType = data.getString("type");
+                        groupId = data.getString("groupId");
+                        groupName = data.getString("groupName");
+                        photoUrl = data.getString("photoUrl");
+                        senderName = data.getString("senderName");
+                        if(groupName.equals(mCurrentUser.getName()))
+                            groupName = senderName;
+//                        Toast.makeText(MainActivity.this, groupId + "/" + groupName + "/" + photoUrl, Toast.LENGTH_SHORT).show();
                     } catch (JSONException mE) {
                         mE.printStackTrace();
                     }
 
                     if(messageType.equals("friend_request")){
-                        addFriend(data);
+                        if (actionType == OSNotificationAction.ActionType.ActionTaken){
+                            if(result.action.actionID.equals(NOTI_ACCEPT)) {
+                                addFriend(data);
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, R.string.declined_request, Toast.LENGTH_SHORT).show();
+                        }
+                    } else if(messageType.equals("message")){
+                        Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                        intent.putExtra(GROUP_ID, groupId);
+                        intent.putExtra(GROUP_NAME, groupName);
+                        intent.putExtra(PHOTO_URL, photoUrl);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
                     }
                 }
 
-                if (actionType == OSNotificationAction.ActionType.ActionTaken)
-                    Log.i("OneSignalExample", "Button pressed with id: " + result.action.actionID);
             }
         }).init();
 
@@ -287,6 +320,12 @@ public class MainActivity extends AppCompatActivity implements
 
     private void addFriend(JSONObject object){
         User user = new User();
+        String currentUserId = "";
+        try{
+            currentUserId = mFirebaseAuth.getCurrentUser().getUid();
+        } catch (NullPointerException e){
+
+        }
         try {
             user.setName(object.getString("sender_name"));
             user.setEmail(object.getString("sender_email"));
@@ -296,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements
 
             //Add sender to receiver's friend list
             mFirebaseDatabaseReference.child(USERS_CHILD)
-                    .child(mFirebaseAuth.getCurrentUser().getUid())
+                    .child(currentUserId)
                     .child(FRIENDS_CHILD)
                     .child(user.getId())
                     .setValue(user);
@@ -305,19 +344,27 @@ public class MainActivity extends AppCompatActivity implements
             mFirebaseDatabaseReference.child(USERS_CHILD)
                     .child(user.getId())
                     .child(FRIENDS_CHILD)
-                    .child(mFirebaseAuth.getCurrentUser().getUid())
+                    .child(currentUserId)
                     .setValue(mCurrentUser);
 
+            //Add sender and receiver to a private chat
+            String chatId = mFirebaseDatabaseReference.child(CHATS_CHILD).push().getKey();
+//            user.setPrivateChatId(chatId);
+            mFirebaseDatabaseReference.child(CHATS_CHILD).child(chatId).child(ID_CHILD).setValue(chatId);
+            mFirebaseDatabaseReference.child(CHATS_CHILD).child(chatId).child(MEMBERS_CHILD).child(currentUserId).setValue(mCurrentUser);
+            mFirebaseDatabaseReference.child(CHATS_CHILD).child(chatId).child(MEMBERS_CHILD).child(user.getId()).setValue(user);
+
+            //Add private chat ID to current user friend list
+//            mFirebaseDatabaseReference.child(USERS_CHILD).child(currentUserId).child(FRIENDS_CHILD).child(user.getId()).child(PRIVATE_CHAT_CHILD).setValue(chatId);
+            mFirebaseDatabaseReference.child(USERS_CHILD).child(currentUserId).child(PRIVATE_CHAT_CHILD).child(user.getId()).setValue(chatId);
+            mFirebaseDatabaseReference.child(USERS_CHILD).child(user.getId()).child(PRIVATE_CHAT_CHILD).child(currentUserId).setValue(chatId);
+
             Toast.makeText(this, "Added " + user.getName() + " to your friend list", Toast.LENGTH_SHORT).show();
+
         } catch (JSONException mE) {
             mE.printStackTrace();
             Toast.makeText(this, "Failed to add friend", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-
     }
 
     @Override

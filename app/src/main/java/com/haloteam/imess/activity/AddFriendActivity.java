@@ -37,6 +37,8 @@ import static com.haloteam.imess.MainActivity.FRIENDS_CHILD;
 public class AddFriendActivity extends AppCompatActivity {
 
     private static final String TAG = "addfriendactivity";
+    public static final String NOTI_ACCEPT = "btAccept";
+    public static final String NOTI_DECLINE = "btDecline";
 
     public static class UserViewHolder extends RecyclerView.ViewHolder{
         TextView name;
@@ -64,6 +66,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
     private FirebaseUser mUser;
     private String mCurrentUserOneSignalId;
+    private String mPhotoUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +81,11 @@ public class AddFriendActivity extends AppCompatActivity {
         mUserList.setHasFixedSize(true);
 
         mUser = FirebaseAuth.getInstance().getCurrentUser();
+        if(mUser.getPhotoUrl() != null){
+            mPhotoUrl = mUser.getPhotoUrl().toString();
+        } else {
+            mPhotoUrl = "ic_group";
+        }
         OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
             @Override
             public void idsAvailable(String userId, String registrationId) {
@@ -119,6 +127,7 @@ public class AddFriendActivity extends AppCompatActivity {
                 mDatabaseReference.child(USERS_CHILD).orderByChild(EMAIL_CHILD).startAt(email)) {
             @Override
             protected void populateViewHolder(final UserViewHolder viewHolder, final User model, int position) {
+                //If this user existed in current user's friend list, exclude him/her
                 if(model.getEmail().equals(mUser.getEmail())) {
                     viewHolder.itemView.getLayoutParams().height = 0;
                     viewHolder.itemView.requestLayout();
@@ -132,7 +141,6 @@ public class AddFriendActivity extends AppCompatActivity {
                                 AddFriendActivity.this,
                                 R.drawable.account_circle));
 
-                    //If this user existed in current user's friend list, exclude him/her
                     mDatabaseReference.child(USERS_CHILD)
                             .child(mUser.getUid())
                             .child(FRIENDS_CHILD)
@@ -149,13 +157,16 @@ public class AddFriendActivity extends AppCompatActivity {
                                             public void onClick(View v) {
                                                 try {
                                                     OneSignal.postNotification(new JSONObject("{" +
-                                                                    "'contents': {'en':' " + model.getName() + " wants to be your friend.'}, " +
+                                                                    "'contents': {'en':' " + mUser.getDisplayName() + " wants to be your friend.', 'vi': '" + mUser.getDisplayName() + " đã gửi cho bạn yêu cầu kết bạn.'}, " +
                                                                     "'data': {'type': 'friend_request', " +
                                                                     "'sender_id': '" + mUser.getUid() + "', " +
                                                                     "'sender_email': '" + mUser.getEmail() + "', " +
                                                                     "'sender_name': '" + mUser.getDisplayName() + "', " +
                                                                     "'sender_oneSignalId': '" + mCurrentUserOneSignalId + "', " +
                                                                     "'sender_photoUrl': '" + mUser.getPhotoUrl() + "'}, " +
+                                                                    "'buttons': [{'id': '" + NOTI_ACCEPT +"', 'text': '" + getString(R.string.accept) +"', 'icon': 'ic_check_white'}, " +
+                                                                                "{'id': '" + NOTI_DECLINE + "', 'text': '" + getString(R.string.decline) + "', 'icon': 'ic_close'}], " +
+                                                                    "'big_picture': '" + mPhotoUrl + "', " +
                                                                     "'include_player_ids': ['" + model.getOneSignalId() + "']}"),
                                                             new OneSignal.PostNotificationResponseHandler() {
                                                                 @Override
@@ -169,7 +180,7 @@ public class AddFriendActivity extends AppCompatActivity {
                                                                     Log.e(TAG, "postNotification Failure: " + response.toString());
                                                                 }
                                                             });
-                                                    Toast.makeText(AddFriendActivity.this, "Sending request to " + model.getOneSignalId(), Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(AddFriendActivity.this, "Sending request to " + model.getName(), Toast.LENGTH_SHORT).show();
                                                 } catch (JSONException e) {
                                                     e.printStackTrace();
                                                 }

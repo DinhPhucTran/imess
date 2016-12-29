@@ -6,4 +6,9 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
+
+    <style name="AppTheme.NoActionBarWithWhiteHintText" parent="AppTheme.NoActionBar">
+        <item name="android:textColorHint">@color/colorPrimaryTextWhite</item>
+        <item name="colorControlNormal">@color/colorPrimaryTextWhite</item>
+    </style>
 </resources>

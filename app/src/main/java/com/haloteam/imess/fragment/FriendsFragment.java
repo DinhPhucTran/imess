@@ -12,12 +12,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.haloteam.imess.R;
 import com.haloteam.imess.activity.AddFriendActivity;
 import com.haloteam.imess.activity.ChatActivity;
@@ -28,7 +32,11 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.haloteam.imess.MainActivity.FRIENDS_CHILD;
+import static com.haloteam.imess.MainActivity.PRIVATE_CHAT_CHILD;
 import static com.haloteam.imess.MainActivity.USERS_CHILD;
+import static com.haloteam.imess.activity.ChatActivity.GROUP_NAME;
+import static com.haloteam.imess.activity.ChatActivity.PHOTO_URL;
+import static com.haloteam.imess.fragment.GroupsFragment.GROUP_ID;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -153,7 +161,8 @@ public class FriendsFragment extends Fragment {
     }
 
     private void initFriendList(){
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         mFirebaseDbRef = FirebaseDatabase.getInstance().getReference();
         if(mFirebaseAdapter != null)
             mFirebaseAdapter.cleanup();
@@ -165,17 +174,35 @@ public class FriendsFragment extends Fragment {
             protected void populateViewHolder(UserViewHolder viewHolder, final User model, int position) {
                 viewHolder.name.setText(model.getName());
                 viewHolder.email.setText(model.getEmail());
+                final String[] privateChatId = new String[1];
+                privateChatId[0] = "";
                 if(model.getPhotoUrl() != null)
                     Glide.with(getContext()).load(model.getPhotoUrl()).into(viewHolder.image);
                 else
                     viewHolder.image.setImageDrawable(ContextCompat.getDrawable(
                             getContext(),
                             R.drawable.account_circle));
+                mFirebaseDbRef.child(USERS_CHILD).child(currentUserId).child(PRIVATE_CHAT_CHILD).child(model.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue() != null) {
+                            privateChatId[0] = dataSnapshot.getValue().toString();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
                 viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(getContext(), ChatActivity.class);
-                        intent.putExtra(ChatActivity.FRIEND_ID, model.getId());
+                        Intent intent = new Intent(getActivity(), ChatActivity.class);
+//                        intent.putExtra(GROUP_ID, model.getPrivateChatId());
+                        intent.putExtra(GROUP_ID, privateChatId[0]);
+                        intent.putExtra(GROUP_NAME, model.getName());
+                        intent.putExtra(PHOTO_URL, model.getPhotoUrl());
                         startActivity(intent);
                     }
                 });

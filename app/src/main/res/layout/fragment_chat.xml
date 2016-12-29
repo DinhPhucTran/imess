@@ -11,7 +11,7 @@
         android:background="@color/colorLightBg"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:paddingBottom="60dp"
+        android:paddingBottom="70dp"
         android:clipToPadding="false"/>
 
     <View

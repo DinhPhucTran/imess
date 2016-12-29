@@ -10,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,17 +20,24 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.haloteam.imess.Adapter.MessageAdapter;
+import com.google.firebase.database.ValueEventListener;
 import com.haloteam.imess.MainActivity;
 import com.haloteam.imess.R;
 import com.haloteam.imess.activity.ChatActivity;
 import com.haloteam.imess.model.Message;
 import com.haloteam.imess.model.User;
+import com.onesignal.OneSignal;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -39,13 +47,24 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.view.Gravity.LEFT;
 import static android.view.Gravity.RIGHT;
+import static com.haloteam.imess.MainActivity.CHATS_CHILD;
+import static com.haloteam.imess.MainActivity.ID_CHILD;
+import static com.haloteam.imess.MainActivity.LAST_MESSAGE_CHILD;
+import static com.haloteam.imess.MainActivity.MEMBERS_CHILD;
+import static com.haloteam.imess.MainActivity.PHOTO_URL_CHILD;
+import static com.haloteam.imess.MainActivity.TITLE_CHILD;
+import static com.haloteam.imess.MainActivity.USERS_CHILD;
 
 public class ChatFragment extends Fragment {
 
     public static final String TAG = "ChatFragment";
 
     public static String MESSAGES_CHILD = "messages";
+    public static String RECENTS_CHILD = "recents";
+
     private String mGroupId;
+    private String mGroupName;
+    private String mPhotoUrl;
     private DatabaseReference mFirebaseDbRef;
     private FirebaseRecyclerAdapter mFirebaseAdapter;
     private LinearLayoutManager mLinearLayoutManager;
@@ -54,10 +73,11 @@ public class ChatFragment extends Fragment {
     private Button mBtSend;
     private EditText mEtMessage;
 
-    static public User currentUser = new User("a", "abc@gmail.com", "abc", null);
-    List<Message> messages;
+//    static public User currentUser = new User("a", "abc@gmail.com", "abc", null);
+//    List<Message> messages;
     private String mCurrentUserId;
     private String mFriendId;
+    private String mCurrentUserName;
 
     private OnFragmentInteractionListener mListener;
 
@@ -76,13 +96,21 @@ public class ChatFragment extends Fragment {
         mGroupId = id;
     }
 
+    public void setGroupName(String name){
+        mGroupName = name;
+    }
+
+    public void setPhotoUrl(String url){
+        mPhotoUrl = url;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mFriendId = ChatActivity.mFriendId;
         mCurrentUserId = MainActivity.getCurrentUser().getId();
-
+        mCurrentUserName = MainActivity.getCurrentUser().getName();
     }
 
     @Override
@@ -122,15 +150,26 @@ public class ChatFragment extends Fragment {
         mBtSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Message message = new Message();
-                message.setSenderName(MainActivity.getCurrentUser().getName());
-                message.setSenderPhotoUrl(MainActivity.getCurrentUser().getPhotoUrl());
-                message.setMessageContent(mEtMessage.getText().toString());
-                message.setTimeStamp(System.currentTimeMillis());
-                message.setSenderId(mCurrentUserId);
+                if(!mEtMessage.getText().toString().isEmpty()) {
+                    Message message = new Message();
+                    message.setSenderName(MainActivity.getCurrentUser().getName());
+                    message.setSenderPhotoUrl(MainActivity.getCurrentUser().getPhotoUrl());
+                    message.setMessageContent(mEtMessage.getText().toString());
+                    message.setTimeStamp(System.currentTimeMillis());
+                    message.setSenderId(mCurrentUserId);
 
-                mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).push().setValue(message);
-                mEtMessage.setText("");
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).push().setValue(message);
+                    mEtMessage.setText("");
+
+                    //Send notification to other members
+                    sendNotis(message.getMessageContent());
+
+                    //Add this chat to recent chats
+                    mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(ID_CHILD).setValue(mGroupId);
+                    mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(TITLE_CHILD).setValue(mGroupName);
+                    mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(PHOTO_URL_CHILD).setValue(mPhotoUrl);
+                    mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(LAST_MESSAGE_CHILD).setValue(mCurrentUserName + ": " + message.getMessageContent());
+                }
             }
         });
 
@@ -274,6 +313,46 @@ public class ChatFragment extends Fragment {
 
         mRvMessages.setLayoutManager(mLinearLayoutManager);
         mRvMessages.setAdapter(mFirebaseAdapter);
+    }
+
+    public void sendNotis(final String message){
+        mFirebaseDbRef.child(CHATS_CHILD).child(mGroupId).child(MEMBERS_CHILD).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+//                Toast.makeText(getContext(), dataSnapshot.getKey().toString()
+//                        + dataSnapshot.getChildrenCount(), Toast.LENGTH_SHORT).show();
+                for(DataSnapshot userSnapshot : dataSnapshot.getChildren()){
+                    User user = userSnapshot.getValue(User.class);
+
+                    if(!user.getId().equals(mCurrentUserId)){
+                        try {
+                            OneSignal.postNotification(new JSONObject("{" +
+                                    "'contents':{'en':'" + mCurrentUserName + ": " + message + "'}," +
+                                    "'data': {'type': 'message', 'groupId': '" + mGroupId + "', 'groupName': '" + mGroupName +"', 'photoUrl': '" + mPhotoUrl +"', 'senderId': '" + mCurrentUserId +"', 'senderName': '" + mCurrentUserName +"'}," +
+                                    "'include_player_ids':['" + user.getOneSignalId() + "']}"),
+                                    new OneSignal.PostNotificationResponseHandler() {
+                                @Override
+                                public void onSuccess(JSONObject response) {
+                                    Log.d(TAG, response.toString());
+                                }
+
+                                @Override
+                                public void onFailure(JSONObject response) {
+                                    Log.d(TAG, response.toString());
+                                }
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {

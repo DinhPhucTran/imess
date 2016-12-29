@@ -33,7 +33,7 @@ import com.haloteam.imess.ultil.GPSTracker;
  */
 
 /**
- * handle it 
+ * handle it
  */
 public class MapFragment extends Fragment implements
         OnMapReadyCallback {
