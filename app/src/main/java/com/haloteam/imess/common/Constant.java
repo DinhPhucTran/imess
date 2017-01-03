@@ -14,4 +14,8 @@ public class Constant {
     public static final String PHOTOURL_CHILD = "photoUrl";
     public static final String LATITUDE_CHILD = "latitude";
     public static final String LONGITUDE_CHILD = "longitude";
+    public static final String MESSAGE_CHILD = "message";
+    public static final String TIMESTAMP_CHILD = "timeStamp";
+    public static final String OWNER_CHILD = "owner";
+    public static final String TIMESEND_CHILD = "timeSend";
 }

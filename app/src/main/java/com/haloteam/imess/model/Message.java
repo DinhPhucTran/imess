@@ -12,15 +12,16 @@ public class Message {
     private String senderName;
     private String senderId;
     private String senderPhotoUrl;
-    private String messageContent;
+    private String message;
     private long timeStamp;
+    private User owner;
 
     public Message(){}
 
-    public Message(String senderName, String senderPhotoUrl, String messageContent, long timeStamp) {
+    public Message(String senderName, String senderPhotoUrl, String message, long timeStamp) {
         this.senderName = senderName;
         this.senderPhotoUrl = senderPhotoUrl;
-        this.messageContent = messageContent;
+        this.message = message;
         this.timeStamp = timeStamp;
     }
 
@@ -48,12 +49,12 @@ public class Message {
         this.senderPhotoUrl = senderPhotoUrl;
     }
 
-    public String getMessageContent() {
-        return messageContent;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMessageContent(String messageContent) {
-        this.messageContent = messageContent;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public long getTimeStamp() {
@@ -70,5 +71,13 @@ public class Message {
 
     public void setSenderId(String senderId) {
         this.senderId = senderId;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 }

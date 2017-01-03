@@ -54,6 +54,15 @@ import static com.haloteam.imess.MainActivity.MEMBERS_CHILD;
 import static com.haloteam.imess.MainActivity.PHOTO_URL_CHILD;
 import static com.haloteam.imess.MainActivity.TITLE_CHILD;
 import static com.haloteam.imess.MainActivity.USERS_CHILD;
+import static com.haloteam.imess.MainActivity.getCurrentUser;
+import static com.haloteam.imess.common.Constant.EMAIL_CHILD;
+import static com.haloteam.imess.common.Constant.MESSAGE_CHILD;
+import static com.haloteam.imess.common.Constant.NAME_CHILD;
+import static com.haloteam.imess.common.Constant.OWNER_CHILD;
+import static com.haloteam.imess.common.Constant.TIMESEND_CHILD;
+import static com.haloteam.imess.common.Constant.TIMESTAMP_CHILD;
+
+import com.haloteam.imess.common.Constant;
 
 public class ChatFragment extends Fragment {
 
@@ -147,6 +156,8 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss +0700");
+
         mBtSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -154,21 +165,34 @@ public class ChatFragment extends Fragment {
                     Message message = new Message();
                     message.setSenderName(MainActivity.getCurrentUser().getName());
                     message.setSenderPhotoUrl(MainActivity.getCurrentUser().getPhotoUrl());
-                    message.setMessageContent(mEtMessage.getText().toString());
+                    message.setMessage(mEtMessage.getText().toString());
                     message.setTimeStamp(System.currentTimeMillis());
                     message.setSenderId(mCurrentUserId);
 
-                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).push().setValue(message);
+                    String id = mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).push().getKey();
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(ID_CHILD).setValue(id);
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(MESSAGE_CHILD).setValue(message.getMessage());
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(TIMESTAMP_CHILD).setValue(message.getTimeStamp());
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(OWNER_CHILD).child(EMAIL_CHILD).setValue(getCurrentUser().getEmail());
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(OWNER_CHILD).child(ID_CHILD).setValue(mCurrentUserId);
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(OWNER_CHILD).child(NAME_CHILD).setValue(mCurrentUserName);
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(OWNER_CHILD).child(PHOTO_URL_CHILD).setValue(getCurrentUser().getPhotoUrl());
+
+                    Date date = new Date(message.getTimeStamp());
+                    mFirebaseDbRef.child(MESSAGES_CHILD).child(mGroupId).child(id).child(TIMESEND_CHILD).setValue(dateFormat.format(date));
+
+                    //Toast.makeText(getContext(), mGroupId, Toast.LENGTH_SHORT).show();
+
                     mEtMessage.setText("");
 
                     //Send notification to other members
-                    sendNotis(message.getMessageContent());
+                    sendNotis(message.getMessage());
 
                     //Add this chat to recent chats
                     mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(ID_CHILD).setValue(mGroupId);
                     mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(TITLE_CHILD).setValue(mGroupName);
                     mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(PHOTO_URL_CHILD).setValue(mPhotoUrl);
-                    mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(LAST_MESSAGE_CHILD).setValue(mCurrentUserName + ": " + message.getMessageContent());
+                    mFirebaseDbRef.child(USERS_CHILD).child(mCurrentUserId).child(RECENTS_CHILD).child(mGroupId).child(LAST_MESSAGE_CHILD).setValue(mCurrentUserName + ": " + message.getMessage());
                 }
             }
         });
@@ -241,42 +265,42 @@ public class ChatFragment extends Fragment {
             @Override
             protected void populateViewHolder(final MessageViewHolder viewHolder, Message model, int position) {
                 viewHolder.senderName.setText(model.getSenderName());
-                viewHolder.message.setText(model.getMessageContent());
+                viewHolder.message.setText(model.getMessage());
                 Date date = new Date(model.getTimeStamp());
                 viewHolder.timeStamp.setText(dateFormat.format(date));
 
-                if(model.getSenderPhotoUrl() != null)
-                    Glide.with(getContext()).load(model.getSenderPhotoUrl()).into(viewHolder.senderImage);
-                else
-                    viewHolder.senderImage.setImageDrawable(ContextCompat.getDrawable(
-                            getContext(),
-                            R.drawable.account_circle));
+                if(model.getOwner() != null) {
+                    if (model.getOwner().getPhotoUrl() != null)
+                        Glide.with(getContext()).load(model.getOwner().getPhotoUrl()).into(viewHolder.senderImage);
+                    else
+                        viewHolder.senderImage.setImageDrawable(ContextCompat.getDrawable(
+                                getContext(),
+                                R.drawable.account_circle));
 
-                if(model.getSenderId() != null) {
-                    if (model.getSenderId().equals(mCurrentUserId)) {
-                        viewHolder.senderName.setVisibility(View.GONE);
-                        viewHolder.senderImage.setVisibility(View.GONE);
-                        viewHolder.message.setBackgroundResource(R.drawable.message_bg_1);
-                        viewHolder.message.setPadding(10, 10, 10, 10);
-                        viewHolder.layout.setGravity(RIGHT);
+                    if (model.getOwner().getId() != null) {
+                        if (model.getOwner().getId().equals(mCurrentUserId)) {
+                            viewHolder.senderName.setVisibility(View.GONE);
+                            viewHolder.senderImage.setVisibility(View.GONE);
+                            viewHolder.message.setBackgroundResource(R.drawable.message_bg_1);
+                            viewHolder.message.setPadding(10, 10, 10, 10);
+                            viewHolder.layout.setGravity(RIGHT);
 
-                        ViewGroup.LayoutParams lp = ((ViewGroup) viewHolder.layout).getLayoutParams();
-                        if( lp instanceof ViewGroup.MarginLayoutParams)
-                        {
-                            ((ViewGroup.MarginLayoutParams) lp).leftMargin = 40;
-                        }
+                            ViewGroup.LayoutParams lp = ((ViewGroup) viewHolder.layout).getLayoutParams();
+                            if (lp instanceof ViewGroup.MarginLayoutParams) {
+                                ((ViewGroup.MarginLayoutParams) lp).leftMargin = 40;
+                            }
 
-                    } else {
-                        viewHolder.senderName.setVisibility(View.VISIBLE);
-                        viewHolder.senderImage.setVisibility(View.VISIBLE);
-                        viewHolder.message.setBackgroundResource(R.drawable.message_bg_2);
-                        viewHolder.message.setPadding(10, 10, 10, 10);
-                        viewHolder.layout.setGravity(LEFT);
+                        } else {
+                            viewHolder.senderName.setVisibility(View.VISIBLE);
+                            viewHolder.senderImage.setVisibility(View.VISIBLE);
+                            viewHolder.message.setBackgroundResource(R.drawable.message_bg_2);
+                            viewHolder.message.setPadding(10, 10, 10, 10);
+                            viewHolder.layout.setGravity(LEFT);
 
-                        ViewGroup.LayoutParams lp = ((ViewGroup) viewHolder.layout).getLayoutParams();
-                        if( lp instanceof ViewGroup.MarginLayoutParams)
-                        {
-                            ((ViewGroup.MarginLayoutParams) lp).rightMargin = 40;
+                            ViewGroup.LayoutParams lp = ((ViewGroup) viewHolder.layout).getLayoutParams();
+                            if (lp instanceof ViewGroup.MarginLayoutParams) {
+                                ((ViewGroup.MarginLayoutParams) lp).rightMargin = 40;
+                            }
                         }
                     }
                 }

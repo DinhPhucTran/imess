@@ -3,7 +3,6 @@ package com.haloteam.imess.activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -15,24 +14,23 @@ import android.view.MenuItem;
 
 import com.haloteam.imess.R;
 import com.haloteam.imess.fragment.ChatFragment;
-import com.haloteam.imess.fragment.MapFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.haloteam.imess.fragment.GroupsFragment.GROUP_ID;
 
-public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFragmentInteractionListener, MapFragment.OnFragmentInteractionListener {
+public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFragmentInteractionListener {
 
     public static final String FRIEND_ID = "FriendID";
     public static final String GROUP_NAME = "GroupName";
     public static final String PHOTO_URL = "photoURL";
 
     private ChatFragment mChatFragment = null;
-    private MapFragment mMapFragment = null;
+//    private MapFragment mMapFragment = null;
     private Toolbar mToolbar;
-    private TabLayout mTabLayout;
-    private ViewPager mViewPager;
+//    private TabLayout mTabLayout;
+//    private ViewPager mViewPager;
     public static String mFriendId;
     private String mGroupId;
     private String mGroupName;
@@ -51,28 +49,35 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
         setContentView(R.layout.activity_chat);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        mChatFragment = new ChatFragment();
-        mMapFragment = new MapFragment();
-        mViewPager = (ViewPager) findViewById(R.id.viewPager);
-        setupViewPager(mViewPager);
-        mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
-        mTabLayout.setupWithViewPager(mViewPager);
+//        mChatFragment = new ChatFragment();
+//        mMapFragment = new MapFragment();
+//        mViewPager = (ViewPager) findViewById(R.id.viewPager);
+//        setupViewPager(mViewPager);
+//        mTabLayout = (TabLayout) findViewById(R.id.tabLayout);
+//        mTabLayout.setupWithViewPager(mViewPager);
 
         //FragmentTransaction transaction = getFragmentManager().beginTransaction();
         //transaction.replace()
 
-    }
-
-    private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         ChatFragment chatFragment = new ChatFragment();
         chatFragment.setGroupId(mGroupId);
         chatFragment.setGroupName(mGroupName);
         chatFragment.setPhotoUrl(mPhotoUrl);
-        adapter.addFragment(chatFragment, "CHAT");
-        adapter.addFragment(new MapFragment(), "MAP");
-        viewPager.setAdapter(adapter);
+
+        getSupportFragmentManager().beginTransaction().add(R.id.frame, chatFragment).commit();
+
     }
+
+//    private void setupViewPager(ViewPager viewPager) {
+//        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+//        ChatFragment chatFragment = new ChatFragment();
+//        chatFragment.setGroupId(mGroupId);
+//        chatFragment.setGroupName(mGroupName);
+//        chatFragment.setPhotoUrl(mPhotoUrl);
+//        adapter.addFragment(chatFragment, "CHAT");
+//        adapter.addFragment(new MapFragment(), "MAP");
+//        viewPager.setAdapter(adapter);
+//    }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
@@ -102,32 +107,32 @@ public class ChatActivity extends AppCompatActivity implements ChatFragment.OnFr
         return super.onOptionsItemSelected(item);
     }
 
-    class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
-
-        public ViewPagerAdapter(FragmentManager manager) {
-            super(manager);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return mFragmentList.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragmentList.size();
-        }
-
-        public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
-        }
-    }
+//    class ViewPagerAdapter extends FragmentPagerAdapter {
+//        private final List<Fragment> mFragmentList = new ArrayList<>();
+//        private final List<String> mFragmentTitleList = new ArrayList<>();
+//
+//        public ViewPagerAdapter(FragmentManager manager) {
+//            super(manager);
+//        }
+//
+//        @Override
+//        public Fragment getItem(int position) {
+//            return mFragmentList.get(position);
+//        }
+//
+//        @Override
+//        public int getCount() {
+//            return mFragmentList.size();
+//        }
+//
+//        public void addFragment(Fragment fragment, String title) {
+//            mFragmentList.add(fragment);
+//            mFragmentTitleList.add(title);
+//        }
+//
+//        @Override
+//        public CharSequence getPageTitle(int position) {
+//            return mFragmentTitleList.get(position);
+//        }
+//    }
 }
